@@ -1,8 +1,0 @@
-[Unit]
-Description="Watch ethernet carrier status to notify firewall"
-After=multi-user.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/services/eth-watcher/eth-watcher &
-

@@ -1,1 +1,0 @@
-SUBSYSTEM=="tty", DEVNAME=="/dev/ttySC0", RUN+="/usr/services/sat-control/sat-control -f on"

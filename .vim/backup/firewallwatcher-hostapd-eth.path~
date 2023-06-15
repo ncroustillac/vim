@@ -1,7 +1,0 @@
-[Path]
-PathModified=/var/services/acct-authorized/acct-authorized-eth
-PathModified=/var/services/acct-authorized/acct-authorized-wifi
-Unit=firewallwatcher@hostapd.service
-
-[Install]
-WantedBy=multi-user.target

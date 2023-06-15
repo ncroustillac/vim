@@ -1,8 +1,0 @@
---- laird-backport-10.4.0.10/defconfigs/lwb5p_nbt	2023-01-25 16:06:46.942788338 +0100
-+++ laird-backport-10.4.0.10/defconfigs/lwb5p_nbt_patched	2023-01-25 16:04:22.530618315 +0100
-@@ -5,3 +5,5 @@
- CPTCFG_BRCMFMAC=m
- CPTCFG_BRCMFMAC_SDIO=y
- CPTCFG_BRCMFMAC_USB=y
-+CPTCFG_BRCMDBG=y
-+CPTCFG_BRCM_TRACING=y

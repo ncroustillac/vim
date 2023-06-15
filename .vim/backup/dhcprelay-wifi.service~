@@ -1,5 +1,0 @@
-[Unit]
-Description=Forward DHCP packages from wifi to ethhost (and vice-versa)
-
-[Service]
-ExecStart=/usr/sbin/dhcprelay wlan0 ethhost 172.128.2.20

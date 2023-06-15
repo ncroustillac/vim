@@ -1,8 +1,0 @@
-
-//------------------------------------------------------------------------------
-// Public API
-//------------------------------------------------------------------------------
-int comm_if_init(void);
-int comm_if_write(uint8_t * buf, int len);
-int comm_if_read(uint8_t * buf, int len);
-int comm_if_read_wait(uint8_t * buf, int len, int usec_timeout);

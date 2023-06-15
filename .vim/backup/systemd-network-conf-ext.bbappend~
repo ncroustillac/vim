@@ -1,3 +1,0 @@
-SRC_URI_remove += "file://09-ethuod.network"
-
-FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"

@@ -1,1 +1,0 @@
-SUBSYSTEM=="net", KERNEL=="wlan0", RUN+="/usr/service/wifi-enable/wifi-set-netns.sh"
