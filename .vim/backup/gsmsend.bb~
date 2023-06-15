@@ -1,0 +1,29 @@
+DESCRIPTION = "GSM - Handle GSM download interface"
+LICENSE = "CLOSED"
+
+# No need compiler
+INHIBIT_DEFAULT_DEPS = "1"
+S = "${WORKDIR}"
+
+SRC_URI += "file://gsmsend.service"
+SRC_URI += "file://gsmsend.sh"
+SRC_URI += "file://gsmsend.path"
+
+inherit systemd
+
+SYSTEMD_SERVICE_${PN} = "gsmsend.service"
+SYSTEMD_AUTO_ENABLE_${PN} = "enable"
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+
+do_install () {
+  install -d ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/gsmsend.service                ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/gsmsend.path                   ${D}${systemd_unitdir}/system
+
+  install -d ${D}/usr/services/gsmsend
+  install -m 0500 ${WORKDIR}/gsmsend.sh                     ${D}/usr/services/gsmsend
+}
+
+
+FILES_${PN} += "${systemd_unitdir}/system"
+FILES_${PN} += "/usr/services/gsmsend"

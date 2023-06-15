@@ -1,0 +1,105 @@
+
+# =============================================================================
+#   Local logging configuration
+#
+
+$ModLoad immark   # provides --MARK-- message capability
+$ModLoad imuxsock # provides support for local system logging (e.g. via logger command)
+$ModLoad imklog   # kernel logging (formerly provided by rklogd)
+
+# Set the default permissions
+# $PrivDropToUser syslog
+# $PrivDropToGroup syslog
+# $FileOwner syslog
+# $FileGroup syslogro
+$PrivDropToUser root
+$PrivDropToGroup root
+$FileOwner root
+$FileGroup root
+$FileCreateMode 0640
+$DirCreateMode 0750
+$Umask 0022
+
+# Do not log repeated messages to save some space
+$RepeatedMsgReduction on
+
+# =============================================================================
+#   Remote logging configuration
+#
+
+# UDP Syslog Server:
+$ModLoad imudp.so  # provides UDP syslog reception
+$UDPServerRun 514  # start a UDP syslog server at standard port 514
+
+$EscapeControlCharactersOnReceive off
+
+# =============================================================================
+#   Templates/Rules
+#
+
+template(name="MULogs" type="list") {
+  property(name="timereported" dateformat="year")
+  constant(value="-")
+  property(name="timereported" dateformat="month")
+  constant(value="-")
+  property(name="timereported" dateformat="day")
+  constant(value="T")
+  property(name="timereported" dateformat="hour")
+  constant(value=":")
+  property(name="timereported" dateformat="minute")
+  constant(value=":")
+  property(name="timereported" dateformat="second")
+  constant(value=".")
+  property(name="timereported" dateformat="subseconds")
+  constant(value="Z ")
+  property(name="programname")
+  constant(value=" ")
+  property(name="syslogseverity-text")
+  constant(value=" ")
+  property(name="procid")
+  constant(value="  ")
+  property(name="msg")
+  constant(value="\n")
+}
+
+local2.*          /var/hv3_log/Security_Logbook/security.log;MULogs
+kern.err          /var/hv3_log/Security_Logbook/security.log;MULogs
+local3.notice     /var/hv3_log/General_Logbook/application.log;MULogs
+local7.*          /var/hv3_log/Boot_log/boot.log;MULogs
+user.*            /var/hv3_log/infoun_log/user.log;MULogs
+daemon.notice     /var/hv3_log/infodeux_log/daemon.log;MULogs
+local0.*          /var/hv3_log/Security_Logbook/security.log;MULogs
+
+:programname, contains, "Samhain"
+*.* /var/hv3_log/Security_Logbook/security.log;MULogs
+
+:programname, contains, "heats"
+*.* /var/hv3_log/General_Logbook/application.log;MULogs
+
+:msg, contains, "RMCFLSCHCKF"
+*.* /var/hv3_log/Security_Event_Logbook/security_event.log;MULogs
+
+:msg, contains, "USBSDTRANSFERF"
+*.* /var/hv3_log/Security_Event_Logbook/security_event.log;MULogs
+
+:msg, contains, "INVFLS"
+*.* /var/hv3_log/Security_Event_Logbook/security_event.log;MULogs
+
+:msg, contains, "FLSSIGCHCKF"
+*.* /var/hv3_log/Security_Event_Logbook/security_event.log;MULogs
+
+:msg, contains, "PBIT_MODEM"
+*.* /var/hv3_log/General_Logbook/application.log;MULogs
+
+:msg, contains, "WIFIPMATS"
+*.* /var/hv3_log/Security_Logbook/security.log;EXTLogs
+
+:msg, contains, "WIFIPMATF"
+*.* /var/hv3_log/Security_Event_Logbook/security_event.log;EXTLogs
+
+:msg, contains, "ETHPMATS"
+*.* /var/hv3_log/Security_Logbook/security.log;EXTLogs
+
+:msg, contains, "ETHPMATF"
+*.* /var/hv3_log/Security_Event_Logbook/security_event.log;EXTLogs
+

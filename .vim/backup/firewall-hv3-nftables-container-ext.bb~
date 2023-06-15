@@ -1,0 +1,52 @@
+# Include firewall recipe
+require recipes-network/firewall/firewall-hm.inc
+
+# Override default firewall
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+inherit systemd
+
+RDEPENDS_${PN} = "eth-watcher"
+
+SYSTEMD_SERVICE_${PN} += "firewallwatcher-hostapd-eth.path"
+SYSTEMD_SERVICE_${PN} += "firewallwatcher-hostapd-wifi.path"
+SYSTEMD_SERVICE_${PN} += "firewallwatcher-eth-watcher.path"
+SYSTEMD_AUTO_ENABLE   = "enable"
+
+SRC_URI += "file://firewallwatcher-hostapd-eth.path"
+SRC_URI += "file://firewallwatcher-hostapd-wifi.path"
+SRC_URI += "file://firewallwatcher-eth-watcher.path"
+SRC_URI += "file://firewallwatcher@.service"
+SRC_URI += "file://acct-authorized-eth.lock"
+SRC_URI += "file://acct-authorized-eth"
+SRC_URI += "file://acct-authorized-wifi.lock"
+SRC_URI += "file://acct-authorized-wifi"
+SRC_URI += "file://firewall-authent"
+SRC_URI += "file://firewall-prj-common"
+
+do_install_append() {
+  install -d ${D}/${systemd_unitdir}/system/
+  install -d ${D}/var/services
+  install -d ${D}/var/services/acct-authorized/
+  install -m 0644 ${WORKDIR}/firewallwatcher-hostapd-eth.path ${D}${systemd_unitdir}/system/
+  install -m 0644 ${WORKDIR}/firewallwatcher-hostapd-wifi.path ${D}${systemd_unitdir}/system/
+  install -m 0644 ${WORKDIR}/firewallwatcher-eth-watcher.path ${D}${systemd_unitdir}/system/
+  install -m 0644 ${WORKDIR}/firewallwatcher@.service ${D}${systemd_unitdir}/system/
+  install -m 0644 ${WORKDIR}/acct-authorized-eth.lock ${D}/var/services/acct-authorized
+  install -m 0644 ${WORKDIR}/acct-authorized-eth ${D}/var/services/acct-authorized
+  install -m 0644 ${WORKDIR}/acct-authorized-wifi.lock ${D}/var/services/acct-authorized
+  install -m 0644 ${WORKDIR}/acct-authorized-wifi ${D}/var/services/acct-authorized
+  install -m 0755 ${WORKDIR}/firewall-authent ${D}/usr/services/network/firewall-authent
+  install -m 0755 ${WORKDIR}/firewall-prj-common ${D}/usr/services/network/firewall-prj-common
+}
+
+FILES_${PN} += "${systemd_unitdir}/system/firewallwatcher-hostapd-eth.path"
+FILES_${PN} += "${systemd_unitdir}/system/firewallwatcher-hostapd-wifi.path"
+FILES_${PN} += "${systemd_unitdir}/system/firewallwatcher-eth-watcher.path"
+FILES_${PN} += "${systemd_unitdir}/system/firewallwatcher@.service"
+FILES_${PN} += "/var/services/acct-authorized/acct-authorized-eth.lock"
+FILES_${PN} += "/var/services/acct-authorized/acct-authorized-eth"
+FILES_${PN} += "/var/services/acct-authorized/acct-authorized-wifi.lock"
+FILES_${PN} += "/var/services/acct-authorized/acct-authorized-wifi"
+FILES_${PN} += "/usr/services/network/firewall-authent"
+FILES_${PN} += "/usr/services/network/firewall-prj-common"

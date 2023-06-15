@@ -1,0 +1,7 @@
+[Path]
+PathModified=/var/services/acct-authorized/acct-authorized-eth
+PathModified=/var/services/acct-authorized/acct-authorized-wifi
+PathModified=/var/services/eth-disconnect/ext-event
+
+[Install]
+WantedBy=multi-user.target

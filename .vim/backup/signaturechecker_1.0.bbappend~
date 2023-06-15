@@ -1,0 +1,20 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+
+SRC_URI += "file://pkitest/test"
+SRC_URI += "file://signaturechecker-inotify.service"
+SRC_URI += "file://signaturechecker-inotify-daemon"
+SRC_URI += "file://certificate.der"
+SRC_URI += "file://signaturechecker.sh"
+SRC_URI += "file://signaturechecker_prj.sh"
+
+DLAGENT_UPLOAD_PATH="/var/services/signaturechecker/input"
+
+RDEPENDS_${PN} += "openssl-bin"
+
+do_install_append() {
+  install -d ${D}/var/services/signaturechecker/der
+  install -m 0755 ${WORKDIR}/certificate.der           ${D}/var/services/signaturechecker/der
+  install -d ${D}/var/services/signaturechecker/input
+}
+
+FILES_${PN} += "/var/services/signaturechecker"

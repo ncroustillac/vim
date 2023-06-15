@@ -1,0 +1,68 @@
+#! /bin/bash
+
+if [ $# -ne 1 ]; then
+	printf "Usage: $0 [config_file]\n"
+	exit
+fi
+
+# import config file
+source $1
+
+# read and parse config file
+for (( idx=0; ; idx++ )) 
+do
+    part_varname=PART_CONFIG_NAME_${idx}
+    part_varstart=PART_CONFIG_START_${idx}
+    part_varend=PART_CONFIG_END_${idx}
+    part_varfs=PART_CONFIG_FS_${idx}
+
+    # if no more partition found, break and apply
+    if [ -z ${!part_varname}  ]; then
+        break
+	fi
+
+    # if any partition parameter is missing, exit
+    if [ -z ${!part_varstart} ] ||
+       [ -z ${!part_varend}   ] ||
+       [ -z ${!part_varfs}    ]; then
+		printf "Configuration missing for partition $idx\n"
+        exit
+    fi
+
+    # add to a list of partitions
+    part_name[${idx}]=${!part_varname}
+    part_start[${idx}]=${!part_varstart}
+    part_end[${idx}]=${!part_varend}
+    part_fs[${idx}]=${!part_varfs}
+done
+
+# list partition found 
+partition_cnt=${#part_name[@]}
+printf "Found ${partition_cnt} partition(s):\n"
+printf "\tName\t\tStart\tEnd\tfilesystem\n"
+for (( j=0; j<${partition_cnt}; j++ ));
+do
+    printf "$j.\t%-14s\t${part_start[$j]}\t${part_end[$j]}\t${part_fs[$j]}\n" ${part_name[$j]}
+done
+
+printf "Do you want to apply this configuration ? [Y/N/y/n]\n"
+read confirm
+
+if [ ${confirm} = 'Y' ] || [ ${confirm} = 'y' ];then
+    fdisk /dev/null <<EOF
+    g
+    n
+    1
+    ${part_start[0]}
+    2815
+    n
+    2
+    ${part_start[1]}
+    2816
+    13055
+EOF
+
+fi
+
+printf "Exit clear.\n"
+exit 0

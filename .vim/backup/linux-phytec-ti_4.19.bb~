@@ -1,0 +1,161 @@
+SECTION = "kernel"
+DESCRIPTION = "Linux kernel for PHYTEC devices, based on TI's linux-ti-staging"
+LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://COPYING;md5=bbea815ee2795b2f4230826c0c6b8814"
+
+inherit kernel
+
+require recipes-kernel/linux/setup-defconfig.inc
+require common/phytec-localversion.inc
+
+# Look in the generic major.minor directory for files
+FILESEXTRAPATHS_prepend_am57xx := "${THISDIR}/${PN}-4.19:"
+
+
+# Pull in the devicetree files into the rootfs
+RDEPENDS_${KERNEL_PACKAGE_NAME}-base += "kernel-devicetree"
+
+# Add run-time dependency for VPE VPDMA firmware to the rootfs
+RDEPENDS_${KERNEL_PACKAGE_NAME}-base_append_am57xx = " vpdma-fw"
+
+# Add run-time dependency for Goodix firmware to the rootfs
+RDEPENDS_${KERNEL_PACKAGE_NAME}-base_append_am57xx = " goodix-fw"
+
+# Add run-time dependency for PRU firmware to the rootfs
+#RDEPENDS_${KERNEL_PACKAGE_NAME}-base_append_am57xx = " prueth-fw pruhsr-fw pruprp-fw prusw-fw"
+
+KERNEL_EXTRA_ARGS += "LOADADDR=${UBOOT_ENTRYPOINT}"
+
+COMPATIBLE_MACHINE = "am57xx-hv3"
+
+S = "${WORKDIR}/git"
+
+# RELEASE_% information *will* be valid for the following BSP releases:
+# BSP-Yocto-TISDK-AM57xx-PD20.1.2
+RELEASE_BRANCH = "hv3-master"
+RELEASE_VER = "v4.19.79-phy4"
+
+# Set to AUTOREV for development purposes
+SRCREV = "${AUTOREV}"
+#SRCREV = "a417f4d7525d1ef63e6df39452b4c926f98fca2e"
+PV = "4.19.79+git_${RELEASE_VER}"
+
+# Append to the MACHINE_KERNEL_PR so that a new SRCREV will cause a rebuild
+MACHINE_KERNEL_PR_append = "a"
+PR = "${MACHINE_KERNEL_PR}"
+
+KERNEL_GIT_URI = "git://git.sds.safran/git-128/mirror/linux-phytec-ti.git"
+KERNEL_GIT_PROTOCOL = "https"
+SRC_URI += "${KERNEL_GIT_URI};protocol=${KERNEL_GIT_PROTOCOL};branch=${RELEASE_BRANCH}"
+
+FILES_${KERNEL_PACKAGE_NAME}-devicetree += "/${KERNEL_IMAGEDEST}/*.itb"
+
+# Merge the kernel sources with this directory
+SAFRAN-MERGE-SOURCES = "merge_linux-phytec-ti"
+inherit core/safran-merge-sources
+
+# =============================================================================
+#   KERNEL CONFIGURATION
+# =============================================================================
+
+# Default defconfig
+SRC_URI += "file://defconfig"
+
+# Add fragments directory
+SRC_URI += "file://fragments/"
+KERNEL_CONFIG_FRAGMENTS := ""
+
+# -----------------------------------------------------------------------------
+# Change core behaviour
+# -----------------------------------------------------------------------------
+
+# Optimize kernel size instead of performance
+#KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/optimizesize.cfg"
+
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-netfilter-netlink.cfg"
+
+# Enable full preempt-rt
+#KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/preemptrt.cfg"
+# TI_PIPE3 is in module mode
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-config-ti-pipe3.cfg"
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-frag-qcserial.cfg"
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-gsm-cdc-mbim.cfg"
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-netfilter.cfg"
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-config-gsm.cfg"
+#WIFI
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-wifi.cfg"
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-wifi-regdb.cfg"
+#to make wifi modules
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-wifi-cfg80211.cfg"
+# SATELLITE
+KERNEL_CONFIG_FRAGMENTS += "${WORKDIR}/fragments/0001-sat-spi2uart-conv.cfg"
+# =============================================================================
+#   KERNEL PATCHES
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# TODO: To be verified patches
+# -----------------------------------------------------------------------------
+
+#SRC_URI += "file://patches/"
+
+# -----------------------------------------------------------------------------
+# Okay patches
+# -----------------------------------------------------------------------------
+
+# Rename GPIOs
+SRC_URI += "file://patches/0001-add-am5716-hv3-dts.patch"
+
+# Front Ethernet
+SRC_URI += "file://patches/0001-change-cpsw-eth-to-active-slave-1.patch"
+
+# USB Front port
+SRC_URI += "file://patches/0001-usb2-mode-host.patch"
+
+# Switch Ethernet KSZ
+SRC_URI += "file://patches/0001-dt-add-i2c5-nodes.patch"
+SRC_URI += "file://patches/0001-add-pin-muxmode-i2c5.patch"
+SRC_URI += "file://patches/0001-add-i2c-ksz9897-to-ksz-driver-kconfig.patch"
+SRC_URI += "file://patches/0001-add-i2c-ksz9897-to-ksz-driver-makefile.patch"
+# Internal USB for GSM & Wifi
+SRC_URI += "file://patches/0001-qcserial-usb-wwan.patch"
+SRC_URI += "file://patches/0001-usb1-pinmux-for-gsm.patch"
+SRC_URI += "file://patches/0001-wdisable-high-state-forgsm.patch"
+#device tree cleaning=>gpio_fan and cpu_cooling_maps is removed
+SRC_URI += "file://patches/0001-cleaning-fan-gpio-dts.patch"
+SRC_URI += "file://patches/0001-pinmux-gsm-in-usb2.patch"
+# MMC inversion of lock to unlock
+SRC_URI += "file://patches/0001-mmc-lock-invt.patch"
+#GSM move PIN MUX IN omap_dwc3_1
+#SRC_URI += "file://patches/0001-pinmux-gsm-in-omap-dwc3.patch"
+SRC_URI += "file://patches/0001-pinmux-gsm.patch"
+SRC_URI += "file://patches/0001-kconfig-gpio-hv3-modules.patch"
+SRC_URI += "file://patches/0001-makefile-gpio-hv3-modules.patch"
+SRC_URI += "file://patches/0001-gsm-wlan-stm-edt-clean.patch"
+SRC_URI += "file://patches/0001-gsm-pcie1-clean.patch"
+SRC_URI += "file://patches/0001-remove-spidev.patch"
+
+SRC_URI += "file://patches/0001-hv3-gpio-modules-device.patch"
+
+# WIFI PINX MUX
+#A SRC_URI += "file://patches/0001-wifi-mmc3-pinmux.patch"
+#B SRC_URI += "file://patches/0001-wifi-laird-node.patch"
+#C SRC_URI += "file://patches/0001-wifi-cleaning-lcd.patch"
+#D SRC_URI += "file://patches/0001-wifi-cleaning-i2c4.patch"
+# WIFI PIN MUX
+#E SRC_URI += "file://patches/0001-wifi-cleaning-uart10.patch"
+# WIFI= merge of directory brcmfmac from laird version 9 (inside driver/net/wireless/broadcom/brcm80211)
+SRC_URI += "file://patches/0001-wifi-brcmfmac-dir.patch"
+# WIFI= merge of directory brcmutil from laird version 9 (inside driver/net/wireless/broadcom/brcm80211)
+SRC_URI += "file://patches/0001-wifi-brcmutil-dir.patch"
+SRC_URI += "file://patches/0001-wifi-cleaning-lcd-i2c4-uart10-mcasp1.patch"
+SRC_URI += "file://patches/0001-pinmux-wifi.patch"
+SRC_URI += "file://patches/0001-brcm-dev-tree.patch"
+
+# SAT
+SRC_URI += "file://patches/0001-sat-devtree-sc16is7xx.patch"
+SRC_URI += "file://patches/0001-sat-devtree-spi-reversedpin.patch"
+SRC_URI += "file://patches/0001-pinmux-sat.patch"
+
+# Eth disconnect 
+SRC_URI += "file://patches/0001-eth-ioctl-for-gmac-event.patch"

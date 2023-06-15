@@ -1,0 +1,10 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_1='/home/imgworks/img/nil.croustillac_rocket/apps_cpu/MAIN/tests/system/stress_test/i2pgc'
+let g:netrw_dirhist_2='/home/imgworks/.vim/plugin'
+let g:netrw_dirhist_3='/home/imgworks/img/nil.croustillac_rocket/apps_cpu/MAIN/build'
+let g:netrw_dirhist_4='/home/nilcroustillac/.vim/snippets'
+let g:netrw_dirhist_5='/home/nilcroustillac/dev/unsorted_bulk'
+let g:netrw_dirhist_6='/home/nilcroustillac/dev/nil.croustillac_trunk/apps_cpu/MAIN'
+let g:netrw_dirhist_7='/home/nilcroustillac/dev/nil.croustillac_trunk/apps_cpu/MAIN/drivers/frc'
+let g:netrw_dirhist_8='/home/ncc/dev/trunk/efixo/neufbox/neufbox-api-sandbox'

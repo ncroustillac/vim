@@ -1,0 +1,16 @@
+#!/bin/sh
+#--------------------------------------------------------------------------------
+# Script that watch ethernet status because nothing is
+# available in the container... Neither udev, ip monitor or ethtools
+#--------------------------------------------------------------------------------
+
+echo "=== Start watching ethext carrier status every 5s ==="
+
+while true; do
+    if [ $(cat /sys/class/net/ethext/carrier) -eq 0 ]; then
+        touch /var/services/eth-watcher/.eth-disconnected
+        exit 0
+    fi
+
+    sleep 5
+done

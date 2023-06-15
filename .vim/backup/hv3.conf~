@@ -1,0 +1,44 @@
+
+require conf/distro/health-monitoring.conf
+DISTROOVERRIDES =. "health-monitoring:"
+
+PROJECT_NAME = "hv3-host"
+
+# TOOLCHAIN_TARGET_TASK_append = " avro-c"
+# TOOLCHAIN_TARGET_TASK_append = " libhmos-dev libhmoscyclops-dev"
+
+# Users id tables
+# USERADD_UID_TABLES := "recipes-users/hv3-idtables/passwd"
+# USERADD_GID_TABLES := "recipes-users/hv3-idtables/group"
+
+IMAGE_FSTYPES_remove = "wic wic.xz "
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-kernel/linux/linux-phytec-ti_4.4.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-kernel/linux/linux-phytec-ti_4.14.bb"
+BBMASK += "/meta-phytec-ti/recipes-core/packagegroups/packagegroup-arago-tisdk-addons-phycore.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-core/images/phytec-tisdk-image.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-core/packagegroups/packagegroup-arago-tisdk-opencl-phycore.bb"
+#u-boot-phytec_2016.05.bb  u-boot-phytec_2017.01.bb  u-boot-phytec_2018.01.bb  u-boot-phytec.inc  u-boot-phytec-k3-r5_2018.01.bb
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-bsp/u-boot/u-boot-phytec_2016.05.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-bsp/u-boot/u-boot-phytec_2017.01.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-bsp/u-boot/u-boot-phytec_2018.01.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-bsp/u-boot/u-boot-phytec-k3-r5_2018.01.bb"
+BBMASK += "/meta-phytec/meta-phytec-ti/recipes-bsp/arm-trusted-firmware/arm-trusted-firmware_1.5.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-ti/linalg/linalg_git.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-bsp/prueth-fw/prueth-fw-bin_git.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-bsp/ti-sci-fw/ti-sci-fw_2019.02.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-core/base-files/base-files_%.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-core/packagegroups/packagegroup-arago-tisdk-multimedia.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-devtools/ltp-ddt/ltp-ddt_1.0.0.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-multimedia/dual-camera-demo/dual-camera-demo_1.0.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-security/optee/optee-os_git.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-support/cpuset/cpuset_1.5.6.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-ti/libarch/libarch_git.bbappend"
+BBMASK += "meta-phytec/meta-phytec-ti/recipes-ti/linalg/linalg_git.bbappend"
+BBMASK += "meta-laird-cp/recipes-packages/openssl"
+BBMASK += "meta-laird-cp/recipes-packages/.*/.*openssl10.*"
+BBMASK += "meta-healthmonitoring/meta-hm-distro/recipes-connectivity/hostapd/hostapd_%.bbapend"
+# Project-specific global variables values. Refer to
+# classes/fadex-projectvariables.bbclass for project-specific variable and
+# classes/lphm-projectvariables.bbclass in lphm layer for lphm-specific variables
+# require conf/distro/projectvariables.conf
+

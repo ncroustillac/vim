@@ -1,0 +1,94 @@
+#!/bin/sh
+# Description:
+# Script used to upload GSM data
+# folder
+
+conffile="/containers/container-as/storage/ftplink.conf"
+listen_dir="/containers/container-as/var/GSM/fetch/Transfers"
+fp_list="$listen_dir/transfergsm"
+triggerfile="$listen_dir/.completedgsm"
+
+f_notify()
+{
+    rm $triggerfile
+    if [ $1 -eq 0 ]; then
+       printf "Successfuly sent flight package to FTP server\n"
+       touch /containers/container-as/var/notification/to_HEATS/.success_GSM_SEND
+    else
+       printf "Failed to send flight package to FTP server\n"
+       touch /containers/container-as/var/notification/to_HEATS/.fail_GSM_SEND
+       exit 1
+    fi
+}
+
+f_configure()
+{
+    printf "Upload flight package to FTP gound server \n"
+
+    if [ -e $conffile ]; then
+       printf "ftp config found\n"
+       source $conffile
+
+       if [[ -z $username || -z $password || -z $ftp_ip ]]; then
+          printf "Incomplete ftplink.conf"
+          return 1
+       fi
+
+    else
+       printf "Config file %s not found\n" "$conffile"
+       return 1
+    fi
+}
+
+f_send_fp()
+{
+    while read -r fp_candidate; do
+        read -r destination
+        printf "sending file $fp_candidate\n"
+        curl --user $username:$password --upload-file $fp_candidate ftp://$ftp_ip/$destination/
+
+        if [ $? -ne 0 ];then
+            printf "Failed to send %s\n" "$fp_candidate"
+            return 1
+        fi
+    done < ${fp_list}
+    return 0
+}
+
+#The listen fuction is here to catch following request to send fligh packages
+#that would occure before the service has time to shutdown
+f_listen()
+{
+    active_listen=true
+
+    while $active_listen; do
+        active_listen=false
+
+        while INSTALL_RDY=$(inotifywait -t 20 -e create $listen_dir --format=%f -q); do
+            if [ "${INSTALL_RDY#?*CREATE}" = ".completedgsm" ]; then
+               (f_send_fp; f_notify $?) &
+               active_listen=true
+            fi
+        done
+    done
+}
+
+
+for entry in $listen_dir/.*; do
+    case $entry in
+        $triggerfile)
+
+        f_configure
+        f_send_fp
+
+        ret=$?
+#        f_notify $ret &
+
+#        f_listen
+        ;;
+      *)
+    esac
+done
+
+rm $triggerfile
+exit $ret

@@ -1,0 +1,125 @@
+/*
+ =======================================================================
+ Name        : HMOS_SATEnable.c
+ Company     : Safran Electronics & Defense
+ Version     :
+ Copyright   : Safran Electronics & Defense
+ Description : This source file defines the API service HMOS_SATEnable
+ =======================================================================
+ */
+
+/**************************************
+ * IMPORTED COMPONENTS
+ **************************************/
+#include <hmos_cyclops_connectivity.h>
+#include <hmos_log.h>
+#include <string.h>
+#include <hmos.h>
+#include <sys/types.h> 
+#include <stdio.h> 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdint.h>                                                                                                             
+
+/**************************************
+ * LOCAL CONST
+ **************************************/
+ #define PATH_TO_WRITE "/var/services/sat/input"
+
+ #define MAX_PATH_SIZE 100
+ #define SAT_FILE_ENABLE ".trigger_enable"
+ #define SAT_FILE_DISABLE ".trigger_disable"
+
+/**************************************
+ * GLOBAL VARIABLES
+ **************************************/
+/* None */
+
+/**************************************
+ * LOCAL VARIABLES
+ **************************************/
+/* None */
+
+/**************************************
+ * LOCAL PROTOTYPES
+ **************************************/
+e_hmos_retcode create_file_sat(const bool enable);
+
+/* */
+
+/**************************************
+ * EXTERNAL FUNCTIONS
+ **************************************/
+e_hmos_retcode HMOS_SATEnable (const bool enable)
+{
+    int ret;
+    char mode[20];
+
+    // based on others API if this fail there is no error ??
+    if( HMOS_fetchRunningMode(mode) )
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "%s : Fetching Mode failed", __func__);
+        return HMOS_RETCODE_ERROR;
+    }
+
+    ret = strcmp(mode, "operational_secured");
+
+    if(ret==0)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, 
+                      "%s : Security event : HEATSSECF", __func__);
+        return HMOS_RETCODE_ERROR;
+    }
+
+    create_file_sat(enable);
+
+    if ( enable )
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "GSM Enable");
+    }
+    else
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "GSM Disable");
+    }
+
+    return HMOS_RETCODE_SUCCESS;
+}
+
+
+/**************************************
+ * LOCAL FUNCTIONS
+ **************************************/
+e_hmos_retcode create_file_sat(const bool enable)
+{
+    char full_path[MAX_PATH_SIZE];
+    mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP; //0660
+
+    /* Concatenate path and file name */
+    snprintf(full_path, MAX_PATH_SIZE, "%s/%s", PATH_TO_WRITE,
+             (enable ? SAT_FILE_ENABLE : SAT_FILE_DISABLE));
+
+    if ( ! access(full_path, F_OK) )
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR,
+                      "%s: error: SAT operation is still running",
+                      __func__);
+        return HMOS_RETCODE_ERROR;
+    }
+
+    /* Create file from path */
+    if ( creat(full_path, mode) == -1 )
+    {
+       HMOS_logPrint(HMOS_LOG_CRIT_ERROR,
+                     "%s: error while creating file (full path=%s, errno=%d)",
+                     __func__, full_path, errno);
+       HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, 
+                     "Errno = %d : %s", errno, strerror(errno));
+
+       return HMOS_RETCODE_ERROR;
+    }
+
+    HMOS_logPrint(HMOS_LOG_CRIT_NOTICE,
+                  "%s: file created \"%s\"", __func__, full_path);
+
+    return HMOS_RETCODE_SUCCESS;
+}

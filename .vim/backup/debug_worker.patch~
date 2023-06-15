@@ -1,0 +1,38 @@
+--- laird-backport-10.4.0.10/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c	2023-02-01 16:05:26.669595217 +0100
++++ laird-backport-10.4.0.10/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio_patched.c	2023-02-01 16:01:48.996813165 +0100
+@@ -2858,13 +2858,10 @@
+ 
+ 	sdio_claim_host(bus->sdiodev->func1);
+ 
+-	brcmf_dbg(SDIO, "Host handled\n");
+-
+ 	/* If waiting for HTAVAIL, check status */
+ 	if (!bus->sr_enabled && bus->clkstate == CLK_PENDING) {
+ 		u8 clkctl, devctl = 0;
+ 
+-        brcmf_dbg(SDIO, "Clock pending\n");
+ #ifdef DEBUG
+ 		/* Check for inconsistent device control */
+ 		devctl = brcmf_sdiod_readb(bus->sdiodev, SBSDIO_DEVICE_CTL,
+@@ -2888,8 +2885,6 @@
+ 		}
+ 	}
+ 
+-	brcmf_dbg(SDIO, "Bus going to bed\n");
+-
+ 	/* Make sure backplane clock is on */
+ 	brcmf_sdio_bus_sleep(bus, false, true);
+ 
+@@ -2930,12 +2925,8 @@
+ 			brcmf_sdio_ulp_reinit_fw(bus);
+ 	}
+ 
+-	brcmf_dbg(SDIO, "Host will be released\n");
+-
+ 	sdio_release_host(bus->sdiodev->func1);
+ 
+-	brcmf_dbg(SDIO, "Host released...\n");
+-
+ 	/* Generally don't ask for these, can get CRC errors... */
+ 	if (intstatus & I_WR_OOSYNC) {
+ 		brcmf_err("Dongle reports WR_OOSYNC\n");

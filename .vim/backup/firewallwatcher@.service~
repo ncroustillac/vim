@@ -1,0 +1,10 @@
+[Unit]
+Description=Update the firewall on event
+After=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/services/network/firewall-authent %i
+
+[Install]
+WantedBy=multi-user.target

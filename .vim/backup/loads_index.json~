@@ -1,0 +1,122 @@
+{
+    "nbLoadConfig": 9,
+    "configIndex": [
+        {
+            "loadTypeId": 0,
+            "partTableIdx": 0,
+            "mtd_path_slot1": "",
+            "mtd_path_slot2": "",
+            "useTar": false,
+            "destination": "",
+            "name": "HMRS",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 1,
+            "partTableIdx": 1,
+            "mtd_path_slot1": "/dev/mmcblk1p6",
+            "mtd_path_slot2": "/dev/mmcblk1p7",
+            "useTar": false,
+            "destination": "",
+            "name": "CYCLOPS",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 3,
+            "partTableIdx": 2,
+            "mtd_path_slot1": "/var/tmpaut1",
+            "mtd_path_slot2": "/var/tmpaut2",
+            "useTar": true,
+            "destination": "/var/autcfg",
+            "name": "AUTCFG",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 4,
+            "partTableIdx": 3,
+            "mtd_path_slot1": "/dev/mmcblk1p11",
+            "mtd_path_slot2": "/dev/mmcblk1p12",
+            "useTar": true,
+            "destination": "",
+            "name": "UPDCFG",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 2,
+            "partTableIdx": 4,
+            "mtd_path_slot1": "/dev/mmcblk1p13",
+            "mtd_path_slot2": "/dev/mmcblk1p14",
+            "useTar": true,
+            "destination": "/var/oscfg/",
+            "name": "OSCFG",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 5,
+            "partTableIdx": 5,
+            "mtd_path_slot1": "/dev/mmcblk1p15",
+            "mtd_path_slot2": "/dev/mmcblk1p16",
+            "useTar": false,
+            "destination": "/containers/container-as/var/conf/ASCFG.DAT",
+            "name": "ASCFG",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 8,
+            "partTableIdx": 6,
+            "mtd_path_slot1": "/dev/mmcblk1p17",
+            "mtd_path_slot2": "/dev/mmcblk1p18",
+            "useTar": false,
+            "destination": "/containers/container-as/var/services/heats/heats",
+            "name": "HEATS",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 9,
+            "partTableIdx": 7,
+            "mtd_path_slot1": "/dev/mmcblk1p19",
+            "mtd_path_slot2": "/dev/mmcblk1p20",
+            "useTar": true,
+            "destination": "/containers/container-web/var/services/webserver/",
+            "name": "WEB",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        },
+        {
+            "loadTypeId": 22,
+            "partTableIdx": 8,
+            "mtd_path_slot1": "/dev/mmcblk1p8",
+            "mtd_path_slot2": "/dev/mmcblk1p8",
+            "useTar": true,
+            "destination": "/containers/container-as/var/conf/HWCFG.DAT",
+            "name": "HWCFG",
+            "ignoreGlobSep": "|",
+            "ignoreGlob": "*.LUH|*.SIF|*.sha256|*.comp|*.cmp",
+            "installDestSep": ";",
+            "installDest": "LOCAL"
+        }
+    ]
+}

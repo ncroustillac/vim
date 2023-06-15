@@ -1,0 +1,289 @@
+#! /bin/bash
+# =============================================================================
+# Title           :
+# Description     :
+# Author          :
+# Version         : 1.0
+# Bash_version    :
+# Help            :
+###############################################################################
+
+# include/defines.sh script path
+INC_DEFINES_PATH="$(realpath $(dirname ${BASH_SOURCE[0]}))"
+
+# Qemu virtual devices path
+QEMU_CFG_PATH="$(realpath ${INC_DEFINES_PATH}/../../qemu-vahm-configuration/)"
+
+# Default mirror branch (Used by tag.sh and update_mirrors.sh)
+DEFAULT_MIRROR_BRANCH="hv3-master"
+
+# This project's fusion git repository (Used by tag.sh and setup-yocto.sh)
+GIT_REPOSITORIES="https://git.sds.safran/git-128/git"
+
+# Where mirrors are stored (Used by update_mirrors.sh)
+HV3_REPOSITORIES="${GIT_REPOSITORIES}/trans_os"
+
+# Where mirrors are stored (Used by update_mirrors.sh)
+MIRRORS_REPOSITORIES="${GIT_REPOSITORIES}/mirror"
+
+# LPHM project's fusion git repository
+LPHM_GIT_REPOSITORIES="https://git.sds.safran/git-089/git"
+
+# Where mirrors are stored
+LPHM_MIRRORS_REPOSITORIES="${LPHM_GIT_REPOSITORIES}/MIRRORS"
+
+# LPHM mirror branch
+LPHM_DEFAULT_MIRROR_BRANCH="hm-zeus"
+
+# LPOS project's fusion git repository (Used by tag.sh and setup-yocto.sh)
+LPOS_GIT_REPOSITORIES="https://git.sds.safran/git-089/git/LPOS"
+
+# =============================================================================
+#  URLS
+# =============================================================================
+
+# REPOSITORIES syntax:
+#   REPO_NAME;[OPTION1[=OPTION1_value];OPTION2[=OPTION2_value];(...)]
+#
+# For each option, an array REPOSITORIES_OPTION will be created.
+# For instance:
+#   REPOSITORIES= reponame1;option1=value11;option2=value22;option3 reponame2;option1=value21;option4;option5=value25"
+#
+# Will generate:
+#   REPOSITORIES_OPTION1["reponame1"]="value11"
+#   REPOSITORIES_OPTION1["reponame2"]="value21"
+#   REPOSITORIES_OPTION2["reponame1"]="value22"
+#   REPOSITORIES_OPTION3["reponame1"]="option3" # => true
+#   REPOSITORIES_OPTION4["reponame2"]="option4" # => true
+#   REPOSITORIES_OPTION5["reponame2"]="value25"
+#
+# List of used options by entrypoint' scripts:
+#   url=URL                               : URL of repository
+#   branch=BRANCH                         : Integration BRANCH of repository (used as default branch as well)
+#   mirror=URL                            : This repository is a mirror. It mirrors URL. mirror_branch must be set as well.
+#   mirror_branch=BRANCH1,BRANCH2,...     : List of mirrored branches for mirror option
+#   external_url=URL                      : For update_mirrors.sh, external URL (open-source URL)
+#   external_branch=BRANCH1,BRANCH2,...   : For update_mirrors.sh, external URL's mirrored branches
+#   lpos                                  : This repository is made internaly by LPOS
+#   lphm                                  : This repository is made internaly by LPHM
+#   yocto_application=SETUP-YOCTO-OPTION  : This repository is an application used in a yocto recipe. The option to specify the url in setup-yocto.sh is '--SETUP-YOCTO-OPTION'.
+
+# -----------------------------------------------------------------------------
+# HV3 
+# -----------------------------------------------------------------------------
+REPOSITORIES+=" hv3-configuration;url=${HV3_REPOSITORIES}/configuration.git;branch=master"
+REPOSITORIES+=" entrypoint;url=${HV3_REPOSITORIES}/entrypoint.git;branch=master;\
+yocto_application=entrypoint-url\
+"
+REPOSITORIES+=" meta-hv3;url=${HV3_REPOSITORIES}/meta-hv3.git;branch=develop"
+
+REPOSITORIES+=" libhmoscyclops;url=${HV3_REPOSITORIES}/lib_cyclops.git;branch=master;\
+yocto_application=libhmoscyclops-url;\
+"
+
+REPOSITORIES+=" lib_pt;url=${HV3_REPOSITORIES}/lib_pt_hv3.git;branch=master;\
+yocto_application=lib_pt-url;\
+"
+# -----------------------------------------------------------------------------
+# LPHM Mirrors
+# -----------------------------------------------------------------------------
+
+# Platform
+REPOSITORIES+=" lphm-tools;url=${MIRRORS_REPOSITORIES}/lphm-tools;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/lphm-tools;mirror_branch=master;\
+lphm\
+"
+REPOSITORIES+=" lphm-configuration;url=${MIRRORS_REPOSITORIES}/lphm-configuration.git;branch=${DEFAULT_MIRROR_BRANCH};\
+yocto_application=lphmconfiguration-url;\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/configuration;mirror_branch=master;\
+lphm\
+"
+REPOSITORIES+=" meta-healthmonitoring;url=${MIRRORS_REPOSITORIES}/meta-healthmonitoring;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/meta-healthmonitoring;mirror_branch=zeus;\
+lphm\
+"
+
+# Applications
+
+REPOSITORIES+=" lib_common;url=${MIRRORS_REPOSITORIES}/common;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/common;mirror_branch=master;\
+yocto_application=libcommon-url;\
+lphm\
+"
+REPOSITORIES+=" timed;url=${MIRRORS_REPOSITORIES}/timed;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/timed;mirror_branch=master;\
+yocto_application=timed-url;\
+lphm\
+"
+REPOSITORIES+=" lib_hmos;url=${MIRRORS_REPOSITORIES}/lib_hmos;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/lib_hmos;mirror_branch=master,devel;\
+yocto_application=libhmos-url;\
+lphm\
+"
+REPOSITORIES+=" cmake;url=${MIRRORS_REPOSITORIES}/cmake;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/cmake;mirror_branch=master;\
+yocto_application=cmake-url;\
+lphm\
+"
+REPOSITORIES+=" test-framework;url=${MIRRORS_REPOSITORIES}/test-framework;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/test-framework;mirror_branch=master;\
+yocto_application=testframework-url;\
+lphm\
+"
+REPOSITORIES+=" dataloader;url=${MIRRORS_REPOSITORIES}/dataloader;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/dataloader;mirror_branch=master;\
+yocto_application=dataloader-url;\
+lphm\
+"
+REPOSITORIES+=" dlagent;url=${MIRRORS_REPOSITORIES}/dl_agent;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/dl_agent;mirror_branch=master;\
+yocto_application=dlagent-url;\
+lphm\
+"
+REPOSITORIES+=" libs_dl;url=${MIRRORS_REPOSITORIES}/libs_dl;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/libs_dl;mirror_branch=master;\
+yocto_application=libsdl-url;\
+lphm\
+"
+REPOSITORIES+=" installer;url=${MIRRORS_REPOSITORIES}/installer;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/installer;mirror_branch=master;\
+yocto_application=installer-url;\
+lphm\
+"
+REPOSITORIES+=" signaturechecker;url=${MIRRORS_REPOSITORIES}/signaturechecker;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_GIT_REPOSITORIES}/HM/signaturechecker;mirror_branch=master;\
+yocto_application=signaturechecker-url;\
+lphm\
+"
+# -----------------------------------------------------------------------------
+# LPOS Mirrors
+# -----------------------------------------------------------------------------
+
+REPOSITORIES+=" gen-builder;url=${MIRRORS_REPOSITORIES}/gen-builder;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/gen-builder;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=${LPOS_GIT_REPOSITORIES}/gen-builder;external_branch=master;\
+lpos\
+"
+REPOSITORIES+=" setup-yocto;url=${MIRRORS_REPOSITORIES}/setup-yocto;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/setup-yocto;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=${LPOS_GIT_REPOSITORIES}/setup-yocto;external_branch=master;\
+lpos\
+"
+REPOSITORIES+=" meta-safran;url=${MIRRORS_REPOSITORIES}/meta-safran;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/meta-safran;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=${LPOS_GIT_REPOSITORIES}/meta-safran;external_branch=zeus;\
+lpos\
+"
+REPOSITORIES+=" lpos-tools;url=${MIRRORS_REPOSITORIES}/lpos-tools;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/lpos-tools;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=${LPOS_GIT_REPOSITORIES}/lpos-tools;external_branch=master;\
+lpos\
+"
+REPOSITORIES+=" lib_slfs;url=${MIRRORS_REPOSITORIES}/lib-common-slfs;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/lib-common-slfs;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=${LPOS_GIT_REPOSITORIES}/lib-common-slfs;external_branch=master;\
+yocto_application=libslfs-url;\
+lpos\
+"
+# -----------------------------------------------------------------------------
+# External Mirrors
+# -----------------------------------------------------------------------------
+
+REPOSITORIES+=" meta-openembedded;url=${MIRRORS_REPOSITORIES}/meta-openembedded;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/meta-openembedded;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=https://git.openembedded.org/meta-openembedded;external_branch=zeus\
+"
+REPOSITORIES+=" meta-security;url=${MIRRORS_REPOSITORIES}/meta-security;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/meta-security;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=https://git.yoctoproject.org/git/meta-security;external_branch=zeus\
+"
+REPOSITORIES+=" meta-ti;url=${MIRRORS_REPOSITORIES}/meta-ti;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/meta-ti;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=https://git.yoctoproject.org/git/meta-ti;external_branch=zeus\
+"
+REPOSITORIES+=" meta-virtualization;url=${MIRRORS_REPOSITORIES}/meta-virtualization;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/meta-virtualization;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=https://git.yoctoproject.org/git/meta-virtualization;external_branch=zeus\
+"
+REPOSITORIES+=" poky;url=${MIRRORS_REPOSITORIES}/poky;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=${LPHM_MIRRORS_REPOSITORIES}/poky;mirror_branch=${LPHM_DEFAULT_MIRROR_BRANCH};\
+external_url=https://git.yoctoproject.org/git/poky;external_branch=zeus\
+"
+REPOSITORIES+=" meta-phytec;url=${MIRRORS_REPOSITORIES}/meta-phytec;branch=${DEFAULT_MIRROR_BRANCH};\
+mirror=https://stash.phytec.com/scm/pub/meta-phytec;mirror_branch=zeus\
+"
+
+# -----------------------------------------------------------------------------
+# PHYTEC sources
+# -----------------------------------------------------------------------------
+
+REPOSITORIES+=" linux-phytec-ti;url=${MIRRORS_REPOSITORIES}/linux-phytec-ti;branch=${DEFAULT_MIRROR_BRANCH};\
+"
+
+REPOSITORIES+=" uboot-phytec;url=${MIRRORS_REPOSITORIES}/uboot-phytec;branch=${DEFAULT_MIRROR_BRANCH};\
+"
+
+# =============================================================================
+#  DO NOT MODIFY THIS PART
+# =============================================================================
+
+# Colors
+TC_STD="\\033[0;39m"
+TC_RED="\\033[1;31m"
+
+f_fatal()
+{
+  echo -e "${TC_RED}INTERNAL ERROR (File:'${BASH_SOURCE[0]}' ; Func:'${FUNCNAME[1]}' ; Line:'${BASH_LINENO[0]}'): $@${TC_STD}"
+  exit 1
+}
+
+optionlist=""
+for repository in ${REPOSITORIES}; do
+  # Get name of the option
+  name="$(echo "${repository}" | sed "s/^\([^;]\+\);.*$/\1/")"
+  # Get list of options
+  options="$(echo "${repository}" | sed "s/^[^;]\+;\(.*\)$/\1/")"
+
+  # Sanity
+  [ -z "${name}" ] && f_fatal "Bad entry for repository ${repository}"
+
+  # Foreach options delimited by ';'
+  for option in $(echo "${options}" | tr ';' ' '); do
+    # Get option name (OPTIONNAME=VALUE)
+    optionname="$(echo "${option}" | sed "s/^\([^=]\+\)=\(.*\)$/\1/" | tr [a-z] [A-Z])"
+    # Get option value if any
+    optionvalue="$(echo "${option}" | sed "s/^\([^=]\+\)=\(.*\)$/\2/")"
+    # Compute array name
+    arrayname="REPOSITORIES_${optionname}"
+
+    # Check if array already exists
+    declaration="$(declare -p ${arrayname} 2>/dev/null)"
+    if [ -z "${declaration}" ]; then
+      # Array does not exist
+      # => Declare associative array for this option
+      declare -A "${arrayname}"
+      optionlist="${optionlist} ${arrayname}"
+    else
+      # Something exists
+      # => Check if the declaration is an associative array
+      if ! [[ "${declaration}" =~ ^declare\ -A\ ${arrayname}.*$ ]]; then
+        # Not an associative array => error
+        f_fatal "Declaration ${arrayname} should be of type 'associative array' (declared with 'declare -A'), found: ${declaration}"
+      fi
+    fi
+
+    # Add entry to the array
+    eval "${arrayname}[${name}]=\"${optionvalue}\""
+  done
+done
+
+# -----------------------------------------------------------------------------
+# DEBUG
+# -----------------------------------------------------------------------------
+#for optionname in ${optionlist}; do
+#  echo "# ========== Auto Initialized array ${optionname}"
+#  declare -p ${optionname}
+#done
+#echo "# ========== END DEBUG"
+
+unset REPOSITORIES

@@ -1,0 +1,17 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "file://host.crt"
+SRC_URI += "file://host.key"
+SRC_URI += "file://ca_hv3_ext.crt"
+
+do_install_append() {
+    #install -d ${D}${sysconfdir}/raddb/certs
+    install -m 0644 ${WORKDIR}/ca_hv3_ext.crt ${D}${sysconfdir}/raddb/certs
+    install -m 0644 ${WORKDIR}/host.key ${D}${sysconfdir}/raddb/certs
+    install -m 0644 ${WORKDIR}/host.crt ${D}${sysconfdir}/raddb/certs
+    rm ${D}${sysconfdir}/raddb/certs/ca.pem
+    rm ${D}${sysconfdir}/raddb/certs/server.pem
+    #rm ${D}${sysconfdir}/raddb/certs/dh
+}
+
+

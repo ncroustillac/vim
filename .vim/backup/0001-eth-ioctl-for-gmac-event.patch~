@@ -1,0 +1,77 @@
+--- git/drivers/net/ethernet/ti/cpsw.c	2023-05-23 11:00:41.828000000 +0200
++++ git/drivers/net/ethernet/ti/cpsw.c	2023-05-23 10:59:44.996000000 +0200
+@@ -38,6 +38,7 @@
+ #include <linux/kmemleak.h>
+ #include <linux/sys_soc.h>
+ #include <linux/net_switch_config.h>
++#include <linux/wait.h>
+ 
+ #include <linux/pinctrl/consumer.h>
+ #include <net/pkt_cls.h>
+@@ -416,7 +417,6 @@
+ 	struct phy_device		*phy;
+ 	struct net_device		*ndev;
+ 	u32				port_vlan;
++	wait_queue_head_t irq_wait;
+ };
+ 
+ static inline u32 slave_read(struct cpsw_slave *slave, u32 offset)
+@@ -1192,6 +1192,8 @@
+ 	if (mac_control != slave->mac_control) {
+ 		phy_print_status(phy);
+ 		writel_relaxed(mac_control, &slave->sliver->mac_control);
++		dev_dbg(priv->dev, "Phy state has changed. => Wake Up Interruptible");
++		wake_up_interruptible(&(slave->irq_wait));
+ 	}
+ 
+ 	slave->mac_control = mac_control;
+@@ -2491,6 +2493,7 @@
+ 	struct cpsw_priv *priv = netdev_priv(dev);
+ 	struct cpsw_common *cpsw = priv->cpsw;
+ 	int slave_no = cpsw_slave_index(cpsw, priv);
++	int link;
+ 
+ 	if (!netif_running(dev))
+ 		return -EINVAL;
+@@ -2502,6 +2505,30 @@
+ 		return cpsw_hwtstamp_get(dev, req);
+ 	case SIOCSWITCHCONFIG:
+ 		return cpsw_switch_config_ioctl(dev, req, cmd);
++	case SIOCDEVPRIVATE:
++		/* XXX: The following line is used to remove the lock put on the
++		 *      ioctl call made on the interface (file: net/core/dev_ioctl.c).
++		 *      The default behavior for private ioctl calls is to take a global
++		 *      lock, assuming a change to the network configuration.
++		 *
++		 *      In our case, this is uneeded as we are merely waiting for the
++		 *      state to change, henceforth, we allowed ourselves to unlock
++		 *      the global lock.
++		 */
++		rtnl_unlock();
++
++		if(cpsw->slaves[slave_no].phy != NULL)
++		{
++			link = cpsw->slaves[slave_no].phy->link;
++			dev_dbg(priv->dev, "Request Wait Ethernet Changed State\n");
++			wait_event_interruptible(cpsw->slaves[slave_no].irq_wait, cpsw->slaves[slave_no].phy->link != link);
++			return put_user(cpsw->slaves[slave_no].phy->link, (char  __user *)req->ifr_data);
++		}
++		else
++		{
++			dev_warn(priv->dev, "No phy available : cannot handle ethernet change state\n");
++			return put_user(cpsw->slaves[slave_no].phy->link, (char  __user *)-1);
++		}
+ 	}
+ 
+ 	if (!cpsw->slaves[slave_no].phy)
+@@ -3346,6 +3373,9 @@
+ 	int			slave_num = slave->slave_num;
+ 	struct cpsw_slave_data	*data = cpsw->data.slave_data + slave_num;
+ 
++    /* Initializing waitqueue for the changed eth state event for eth0 and eth1*/
++    init_waitqueue_head(&slave->irq_wait);
++
+ 	slave->data	= data;
+ 	slave->regs	= regs + slave_reg_ofs;
+ 	slave->sliver	= regs + sliver_reg_ofs;
+

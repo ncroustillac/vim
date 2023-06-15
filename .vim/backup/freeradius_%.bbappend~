@@ -1,0 +1,24 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "file://parse_config.sh"
+SRC_URI += "file://check-eap-tls"
+
+do_install_append () {
+    install -d ${D}/usr/services/freeradius
+    install -m 0755 ${WORKDIR}/parse_config.sh ${D}/usr/services/freeradius
+   
+    # move default configuration file in order to create a
+    # symlink pointing to a place that is not read only
+    install -d ${D}/var/services/freeradius
+    mv ${D}${sysconfdir}/raddb/sites-available/dhcp ${D}/var/services/freeradius/
+    ln -rsf ${D}/var/services/freeradius/dhcp ${D}${sysconfdir}/raddb/sites-available/dhcp
+
+    # remove default file and move the new one to a RW location
+    rm -f ${D}${sysconfdir}/raddb/sites-available/check-eap-tls
+    install -m 0644 ${WORKDIR}/check-eap-tls  ${D}${sysconfdir}/raddb/sites-available/
+    mv ${D}${sysconfdir}/raddb/sites-available//check-eap-tls ${D}/var/services/freeradius/
+    ln -rsf ${D}/var/services/freeradius/check-eap-tls ${D}${sysconfdir}/raddb/sites-available/check-eap-tls
+}
+
+FILES_${PN} += "/var/services/freeradius/"
+FILES_${PN} += "/usr/services/freeradius/"

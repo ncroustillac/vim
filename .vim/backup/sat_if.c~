@@ -1,0 +1,227 @@
+/*
+ * sat_if.c
+ *
+ * Interface that abstract iridium 9602 commands
+ *
+ * Created on: 22 march 2023
+ *  Author: Nil Croustillac
+ */
+//------------------------------------------------------------------------------
+// Includes
+//------------------------------------------------------------------------------
+// standard
+#include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
+
+// local
+#include <comm_if.h>
+#include <sat_if.h>
+
+//------------------------------------------------------------------------------
+// Defines
+//------------------------------------------------------------------------------
+/**
+  * List of available commands that will be translated
+  * to commands name enum SAT_IF_CMD_*
+  **/
+#define SAT_IF_CMD_ENTRY                                \
+    ENTRY(AT,       "AT\r")                             \
+    ENTRY(EN,       "En\r")                             \
+    ENTRY(IN,       "In\r")                             \
+    ENTRY(CIER,     "AT+CIER=%d,%d,%d,%d\r")            \
+    ENTRY(SBDWT,    "AT+SBDWT=%d\r")                    \
+    ENTRY(SBDIX,    "AT+SBDIX\r")                       \
+    ENTRY(SBDD0,    "AT+SBDD0\r")                       \
+
+//------------------------------------------------------------------------------
+// Local types
+//------------------------------------------------------------------------------
+enum _sat_if_cmd_name {
+#define ENTRY(a, b) SAT_IF_CMD_##a,
+    SAT_IF_CMD_ENTRY
+#undef  ENTRY
+    SAT_IF_CMD_END
+};
+
+//------------------------------------------------------------------------------
+// Private variables
+//------------------------------------------------------------------------------
+static char *  _comm_if_available_cmd[] = {
+#define ENTRY(a, b) b,
+    SAT_IF_CMD_ENTRY
+#undef  ENTRY
+};
+
+//------------------------------------------------------------------------------
+// Forward declaration
+//------------------------------------------------------------------------------
+static int _sat_if_send_cmd(int cmd_id, ...);
+static int _sat_if_check_resp(char * str);
+
+//------------------------------------------------------------------------------
+// Public API
+//------------------------------------------------------------------------------
+int sat_if_transfer_txt(uint8_t * buf, int len)
+{
+    int rc;
+    uint8_t response[128];
+
+    // sanity check
+    if ( ! buf || ! len )
+    {
+        printf("Invalid params\n");
+        return -EINVAL;
+    }
+
+    // developpers guide advice to first send an CIER command
+    // but nobody does it. This is a notification of network available
+    // It might be interesting to wait (for this info)
+    rc = _sat_if_send_cmd(SAT_IF_CMD_CIER, 1, 0, 1, 0);
+    if ( 0 >= rc )
+    {
+        printf("error while sending CIER\n");
+        return -1;
+    }
+
+    // wait for network available answer
+    rc = comm_if_read_wait(&response[0], sizeof(response), 10000);
+    if ( 0 >= rc )
+    {
+        printf("error while waiting for network\n");
+        return -1;
+    }
+
+    // TODO: here we should check for answer validity
+    printf("len %d\n", rc);
+    _sat_if_check_resp(&response[0]);
+
+    // transfer message to 9602
+    rc = _sat_if_send_cmd(SAT_IF_CMD_SBDWT, len);
+    if ( 0 >= rc )
+    {
+        printf("erro while sending SBDWT\n");
+        return -1;
+    }
+
+    // wait for answer
+    rc = comm_if_read_wait(&response[0], sizeof(response), 1000);
+    if ( 0 >= rc )
+    {
+        printf("error while waiting for network\n");
+        return -1;
+    }
+
+    //TODO: answer must be "READY"
+    _sat_if_check_resp(&response[0]);
+
+    // send data
+    rc = comm_if_write(buf, len);
+    if ( 0 >= rc )
+    {
+        printf("error while sending data\n");
+        // might need to reset the device or bus
+        return -1;
+    }
+
+    // wait for answer
+    rc = comm_if_read_wait(&response[0], sizeof(response), 1000);
+    if ( 0 >= rc )
+    {
+        printf("error while waiting for network\n");
+        return -1;
+    }
+
+    //TODO: answer must be "0"
+    _sat_if_check_resp(&response[0]);
+
+    // perform SBD session
+    rc = _sat_if_send_cmd(SAT_IF_CMD_SBDIX);
+    if ( 0 >= rc )
+    {
+        printf("erro while sending SBDWT\n");
+        return -1;
+    }
+
+    // wait for answer
+    rc = comm_if_read_wait(&response[0], sizeof(response), 20000);
+    if ( 0 >= rc )
+    {
+        printf("error while waiting for network\n");
+        return -1;
+    }
+
+    //TODO: answer must be "+SBDIX: 0,23,0,-1,0,0"
+    _sat_if_check_resp(&response[0]);
+
+    // clear the MO message buffer
+    rc = _sat_if_send_cmd(SAT_IF_CMD_SBDD0);
+    if ( 0 >= rc )
+    {
+        printf("erro while sending SBDWT\n");
+        return -1;
+    }
+
+    // wait for answer
+    rc = comm_if_read_wait(&response[0], sizeof(response), 1000);
+    if ( 0 >= rc )
+    {
+        printf("error while waiting for network\n");
+        return -1;
+    }
+
+    //TODO: answer must be "OK"
+    _sat_if_check_resp(&response[0]);
+    
+    return 0;
+}
+
+//------------------------------------------------------------------------------
+// Private API
+//------------------------------------------------------------------------------
+static int _sat_if_send_cmd(int cmd_id, ...)
+{
+   int rc = 0;
+   va_list ap;
+   uint8_t buffer[128];
+
+    if ( SAT_IF_CMD_END <= cmd_id )
+    {
+        printf("Invalid command\n");
+        return -EINVAL;
+    }
+
+    va_start (ap, cmd_id);
+        vsnprintf(buffer, sizeof(buffer),
+                  _comm_if_available_cmd[cmd_id], ap);
+    va_end (ap);
+
+    printf("send %s\n", &buffer[0]);
+    rc = comm_if_write(&buffer[0], strlen(buffer));
+
+    return rc;
+}
+
+//------------------------------------------------------------------------------
+static int _sat_if_check_resp(char * str)
+{
+	char * pos = NULL;
+
+    pos = strtok(str, "\r");
+    // paranoia check
+	while ( pos )
+    {
+        printf("%s\n", pos);
+
+        pos = strtok(NULL, "\r");
+	}
+
+}
+
+

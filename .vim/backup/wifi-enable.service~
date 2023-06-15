@@ -1,0 +1,12 @@
+[Unit]
+Description=Activate the WIFI
+After=machines.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/services/wifi-enable/wifi-enable.sh
+ExecStartPost=/bin/touch /containers/container-as/var/services/wifi/input/.trigger_enable
+
+[Install]
+RequiredBy=multi-user.target
+Also=wifi-enable.path

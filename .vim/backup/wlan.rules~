@@ -1,0 +1,2 @@
+SUBSYSTEM=="net", ACTION=="add", KERNEL=="wlan0", TAG+="systemd", RUN+="/etc/test.sh"
+

@@ -1,0 +1,56 @@
+--- git/drivers/tty/serial/sc16is7xx.c	2023-03-14 19:03:27.035318728 +0100
++++ git/drivers/tty/serial/sc16is7xx_patched.c	2023-03-15 10:40:12.789385607 +0100
+@@ -1156,6 +1156,8 @@
+ 	int i, ret;
+ 	struct sc16is7xx_port *s;
+ 
++    dev_err(dev, "enter default probe\n");
++
+ 	if (IS_ERR(regmap))
+ 		return PTR_ERR(regmap);
+ 
+@@ -1182,6 +1184,8 @@
+ 		freq = clk_get_rate(s->clk);
+ 	}
+ 
++    dev_err(dev, "clock_get processed\n");
++
+ 	s->regmap = regmap;
+ 	s->devtype = devtype;
+ 	dev_set_drvdata(dev, s);
+@@ -1196,6 +1200,8 @@
+ 	}
+ 	sched_setscheduler(s->kworker_task, SCHED_FIFO, &sched_param);
+ 
++    dev_err(dev, "kworker started\n");
++
+ #ifdef CONFIG_GPIOLIB
+ 	if (devtype->nr_gpio) {
+ 		/* Setup GPIO cotroller */
+@@ -1268,6 +1274,8 @@
+ 		sc16is7xx_power(&s->p[i].port, 0);
+ 	}
+ 
++    dev_err(dev, "reset performed\n");
++
+ 	/* Setup interrupt */
+ 	ret = devm_request_irq(dev, irq, sc16is7xx_irq,
+ 			       flags, dev_name(dev), s);
+@@ -1357,6 +1365,8 @@
+ 	if (ret)
+ 		return ret;
+ 
++    dev_err(spi->dev, "spi probe enter\n");
++
+ 	if (spi->dev.of_node) {
+ 		const struct of_device_id *of_id =
+ 			of_match_device(sc16is7xx_dt_ids, &spi->dev);
+@@ -1372,6 +1382,8 @@
+ 		flags = IRQF_TRIGGER_FALLING;
+ 	}
+ 
++    dev_err(spi->dev, "device tree node found\n");
++
+ 	regcfg.max_register = (0xf << SC16IS7XX_REG_SHIFT) |
+ 			      (devtype->nr_uart - 1);
+ 	regmap = devm_regmap_init_spi(spi, &regcfg);

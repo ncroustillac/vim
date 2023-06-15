@@ -1,0 +1,107 @@
+#! /bin/sh
+
+# HV3 container-ext netfilter firewall
+
+HOSTAPD_ADDR="172.128.2.30"
+FREERADIUS_ADDR="172.128.2.20"
+JOURNAL_LOG_CLIENT_ADDR="172.128.2.30"
+JOURNAL_LOG_SERVER_ADDR="172.128.2.1"
+JOURNAL_LOG_PORT="514"
+
+# Must be > 2
+FLOCK_FD="3"
+
+# =============================================================================
+#   RESET
+#
+
+# Flush all tables
+nft flush table ip filter
+nft flush table ip nat
+
+# Flush ruleset
+nft flush ruleset
+
+# Create base low-layers chains
+nft -f /etc/nftables/netdev-ingress.nft
+# Create base IPV4 chains
+nft -f /etc/nftables/ipv4-filter.nft
+nft -f /etc/nftables/ipv4-mangle.nft
+nft -f /etc/nftables/ipv4-nat.nft
+nft -f /etc/nftables/ipv4-raw.nft
+# Create base ARP chains
+nft -f /etc/nftables/arp-filter.nft
+
+# Change to drop policy
+nft add chain ip filter input { policy drop \; }
+nft add chain ip filter output { policy drop \; }
+nft add chain ip filter forward { policy drop \; }
+
+
+# Add a simple counter
+nft add rule ip filter input counter
+nft add rule ip filter output counter
+nft add rule ip filter forward counter
+
+# =============================================================================
+#   NAT CHAIN
+#
+
+# =============================================================================
+#   FILTER CHAIN
+#
+
+# ------------------------------------------------------------------------------
+#   input/output
+#
+
+# Accept already established connections
+nft add rule ip filter input ct state established,related accept
+nft add rule ip filter output ct state established,related accept
+nft add rule ip filter forward ct state established,related accept
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#   Dialogue between journald client and server
+#
+nft add rule ip filter output oifname ethhost ip saddr ${JOURNAL_LOG_CLIENT_ADDR} ip daddr ${JOURNAL_LOG_SERVER_ADDR} ip protocol udp udp dport ${JOURNAL_LOG_PORT} counter accept comment \"accept journald upload to host journald remote\"
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#   Dialogue between freeRadius and Hostapd
+#
+nft add rule ip filter input  iifname ethhost ip saddr ${FREERADIUS_ADDR} ip daddr ${HOSTAPD_ADDR} counter accept comment \"freeradius to hostapd\"
+nft add rule ip filter output oifname ethhost ip saddr ${HOSTAPD_ADDR} ip daddr ${FREERADIUS_ADDR} counter accept comment \"hostapd to freeradius\"
+
+nft add rule ip filter input iifname ethhost udp dport 67-68 counter accept comment \"dhcp\"
+nft add rule ip filter input oifname ethhost udp dport 67-68 counter accept comment \"dhcp\"
+
+
+# Allow forwarding
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# =============================================================================
+#   PROJECT-DEPENDANT
+#
+
+/usr/services/network/firewall-prj
+
+# =============================================================================
+#   LOGGING CHAIN
+#
+
+# Create LOGGING chain
+nft add chain ip filter LOGGING
+
+# All remaining packets are sent to the LOGGING chain
+nft add rule ip filter input counter jump LOGGING
+nft add rule ip filter output counter jump LOGGING
+nft add rule ip filter forward counter jump LOGGING
+
+# Log
+#nft add rule ip filter LOGGING limit rate 2000/minute burst 5 packets counter log prefix \"$(cat /etc/hostname) firewall drop: \" level err
+
+# =============================================================================
+#   KERNEL CONFIGURATION
+#
+
+# Allow iptables logging from containers network namespaces to be sent to the host
+# echo 1 > /proc/sys/net/netfilter/nf_log_all_netns

@@ -1,0 +1,76 @@
+#! /bin/sh
+# Project-dependant firewall rules
+# Called from main firewall script
+
+IF_CU1="eth1"
+IP_CU1_ACQ="192.168.8.10"
+IP_CU1_PWR="192.168.7.10"
+PORT_CU1_ACQ="40000"
+PORT_CU1_PWR="50000"
+IP_AS_ETHHOST="172.128.1.2"
+IP_ACQ="192.168.8.1"
+IP_PWR="192.168.7.1"
+<<<<<<< HEAD
+
+=======
+>>>>>>> refs #6443 Add nft rules to forward wifi to the webserver. Add hostapd hook that notify the system when a user is authenticated via wifi.
+PMAT_ADDR="147.138.26.17"
+ETH_WEBEXT_INT="172.128.3.11"
+ETH_WEBAS_INT="172.128.4.11"
+
+PORT_AS_WEB="60000"
+PORT_TFTP="69"
+
+
+nft add rule ip filter input iifname $IF_CU1 counter accept comment \"safe iface, accept incoming\"
+nft add rule ip filter forward iifname $IF_CU1 counter accept comment \"safe iface, accept incoming\"
+
+#----------- Allow ACQ to discuss with AS -----------
+# NAT for AS/ACQ messages
+nft add rule nat prerouting ip daddr $IP_CU1_ACQ udp dport $PORT_CU1_ACQ counter dnat $IP_AS_ETHHOST
+nft add rule nat postrouting ip saddr $IP_AS_ETHHOST udp sport $PORT_CU1_ACQ counter snat $IP_CU1_ACQ
+# NAT for AS/ACQ tftp
+nft add rule nat prerouting ip daddr $IP_CU1_ACQ udp sport $PORT_TFTP counter dnat $IP_AS_ETHHOST
+nft add rule nat postrouting ip saddr $IP_AS_ETHHOST udp dport $PORT_TFTP counter snat $IP_CU1_ACQ
+# Allow rule for ACQ/AS IP addr
+nft insert rule ip filter forward iifname $IF_CU1 oifname vethas ip daddr $IP_AS_ETHHOST ip saddr $IP_ACQ counter accept
+nft insert rule ip filter forward iifname vethas oifname $IF_CU1 ip saddr $IP_AS_ETHHOST ip daddr $IP_ACQ counter accept
+
+#----------- Allow PWR to discuss with AS -----------
+# NAT for AS/PWR messages
+nft add rule nat prerouting ip daddr $IP_CU1_PWR udp dport $PORT_CU1_PWR counter dnat $IP_AS_ETHHOST
+nft add rule nat postrouting ip saddr $IP_AS_ETHHOST udp sport $PORT_CU1_PWR counter snat $IP_CU1_PWR
+# NAT for AS/PWR tftp
+nft add rule nat prerouting ip daddr $IP_CU1_PWR udp dport $PORT_TFTP counter dnat $IP_AS_ETHHOST
+nft add rule nat postrouting ip saddr $IP_AS_ETHHOST udp dport $PORT_TFTP counter snat $IP_CU1_PWR
+# Allow rule for PWR/AS IP addr
+nft insert rule ip filter forward iifname $IF_CU1 oifname vethas ip daddr $IP_AS_ETHHOST ip saddr $IP_PWR counter accept
+nft insert rule ip filter forward iifname vethas oifname $IF_CU1 ip saddr $IP_AS_ETHHOST ip daddr $IP_PWR counter accept
+
+#----------- Allow PMAT to discuss with Web -----------
+
+#nft insert rule ip filter forward iifname vethext oifname vethwebext ip daddr $PMAT_ADDR ip saddr $ETH_WEBEXT_INT counter accept
+#nft insert rule ip filter forward iifname vethext oifname vethwebext ip saddr $PMAT_ADDR ip daddr $ETH_WEBEXT_INT counter accept
+
+#------------ forward between web and as --------------
+#
+nft add rule ip filter forward iifname vethas oifname vethwebas ip daddr 172.128.4.11 ip saddr 172.128.1.3 counter accept
+nft add rule ip filter forward iifname vethwebas oifname vethas ip daddr 172.128.1.3  ip daddr 172.128.4.11 counter accept
+
+#G_FIREWALL_CONF_FILE="/var/services/conf-extract/OSCFG/conf_firewall"
+
+#if [ -f "${G_FIREWALL_CONF_FILE}" ]; then
+#  while read -r line; do
+#    l_protocol="$(echo ${line} | awk '{print $1}' | tr '[:upper:]' '[:lower:]')"
+#    l_ports="$(echo ${line} | awk '{print $2}')"
+
+#   nft add rule ip filter input   iifname ${UOD_LOCAL_VAS}  ip protocol ${l_protocol} ${l_protocol} sport ${l_ports} counter accept comment \"OSCFG automatic rules\"
+#   nft add rule ip filter input   iifname ${UOD_LOCAL_VETH} ip protocol ${l_protocol} ${l_protocol} dport ${l_ports} counter accept comment \"OSCFG automatic rules\"
+#   nft add rule ip filter forward iifname ${UOD_LOCAL_VAS} oifname ${UOD_LOCAL_VETH} ip protocol ${l_protocol} ${l_protocol} sport ${l_ports} counter accept comment \"OSCFG automatic rules\"
+#   nft add rule ip filter forward oifname ${UOD_LOCAL_VAS} iifname ${UOD_LOCAL_VETH} ip protocol ${l_protocol} ${l_protocol} dport ${l_ports} counter accept comment \"OSCFG automatic rules\"
+
+#   nft add rule ip filter output  oifname ${UOD_LOCAL_VAS}  ip protocol ${l_protocol} ${l_protocol} dport ${l_ports} counter accept comment \"OSCFG automatic rules\"
+#   nft add rule ip filter output  oifname ${UOD_LOCAL_VETH} ip protocol ${l_protocol} ${l_protocol} sport ${l_ports} counter accept comment \"OSCFG automatic rules\"
+
+#  done <${G_FIREWALL_CONF_FILE}
+#fi

@@ -1,0 +1,134 @@
+/*
+ =======================================================================
+ Name        : hmos_cyclops_misc.h
+ Company     : Safran Electronics & Defense
+ Version     :
+ Copyright   : Safran Electronics & Defense
+ Description : This header defines the API of the hmos_cyclops_misc library.
+ =======================================================================
+ */
+
+#ifndef HMOS_CYCLOPS_MISC_H_
+#define HMOS_CYCLOPS_MISC_H_
+#include <hmos_def.h>
+
+/**
+ *  @brief Structure used to store CPU load average of a system element. TBC.
+ */
+typedef struct
+{
+    uint32_t loadAvOneMin;     /**< Load average on one minute */
+    uint32_t loadAvFiveMin;    /**< Load average on five minutes */
+    uint32_t loadAvFifteenMin; /**< Load average on fifteen minutes */
+} st_hmos_cpu_load;
+
+/**
+ * Structure used to store CPU load averages of all system
+ */
+typedef struct
+{
+    st_hmos_cpu_load as; /**< Load averages of applications */
+    st_hmos_cpu_load os; /**< Load averages of operating system */
+} st_hmos_cpu_loads;
+
+/**
+ * @brief Get CPU loads
+ *
+ * @param[out] cpu_load Contains CPU load averages.
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_getCpuLoad ( st_hmos_cpu_loads* cpu_load );
+
+/**
+ * @brief Check if there is loads available in the background loading
+ *
+ * @retval TRUE  There is loads available in the background loading repository
+ * @retval FALSE There is nothing in the background loading repository
+ */
+extern bool HMOS_isLoadAvailable ();
+
+/**
+ * @brief Switches to mode SECURED where external communication devices are desactivated, records a security event with code HEATSSECREQ
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ * @retval HMOS_EINVAL Provided pointer lru_info is NULL.
+ */
+extern e_hmos_retcode HMOS_toSecured ();
+
+/**
+ * @brief Switches from OP to LOADING : desactivates WiFi and SAT links
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ * @retval HMOS_EINVAL Provided pointer lru_info is NULL.
+ */
+extern e_hmos_retcode HMOS_fromOPtoLOADING ();
+
+/**
+ * @brief Opens connection to Remote Server and retrieves FLS information
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ * @retval HMOS_EINVAL Provided pointer lru_info is NULL.
+ */
+extern e_hmos_retcode HMOS_retrieveGSMFLSInfo ();
+
+/**
+ * @brief Sends a short burst data message through the SAT link
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_sendSBD (char * source)
+
+/**
+ * @brief Launches an HIDS scan
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_MaintenanceHIDSScan ();
+
+/**
+ * @brief Launches a communication test of the GSM modem
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_commTestGSM ();
+
+/**
+ * @brief Configures the APN on the SIM card
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_configAPN ();
+
+/**
+ * @brief Configures the PIN on the SIM card
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_configPIN ();
+
+/**
+ * @brief Fetch the current mode
+ *
+ * @retval HMOS_RETCODE_SUCCESS The function completed successfully.
+ * @retval HMOS_RETCODE_ERROR   An error occurred.
+ */
+extern e_hmos_retcode HMOS_fetchRunningMode (char mode[20]);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* HMOS_CYCLOPS_MISC_H_ */
+

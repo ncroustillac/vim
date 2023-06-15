@@ -1,0 +1,40 @@
+# This virtual server allows EAP-TLS to reject access requests
+# based on some certificate attributes.
+
+# Value-pairs that are available for checking include:
+#
+#   TLS-Client-Cert-Subject
+#   TLS-Client-Cert-Issuer
+#   TLS-Client-Cert-Common-Name
+#   TLS-Client-Cert-Subject-Alt-Name-Email
+#
+# To see a full list of attributes, run the server in debug mode
+# with this virtual server configured, and look at the attributes
+# passed in to this virtual server.
+server check-eap-tls {
+
+
+# Authorize - this is the only section required.
+#
+# To accept the access request, set Auth-Type = Accept, otherwise
+# set it to Reject.
+
+authorize {
+    # Filter certificates regarding their Common Name and
+    # reject everything by default. Allowed common names will
+    # be added by the script `parse_config` that is processed
+    # right before starting Freeradius.
+    switch &TLS-Client-Cert-Common-Name {
+        case {
+            update config {
+                Auth-Type = Reject
+            }
+            update reply {
+                Reply-Message = "Your certificate is not valid."
+            }
+        }
+    }
+
+}
+}
+

@@ -1,0 +1,149 @@
+diff --git a/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi b/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
+index b32c02b21832..c69343bc8205 100644
+--- a/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
++++ b/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
+@@ -77,43 +77,6 @@
+ 		};
+ 	};
+ 
+-	rdk_audio: sound {
+-		compatible = "simple-audio-card";
+-		status = "okay";
+-		simple-audio-card,name = "phyCORE-AM57xx-RDK";
+-		simple-audio-card,widgets =
+-			"Line", "Line Out",
+-			"Line", "Line In",
+-			"Microphone", "Mic Jack",
+-			"Headphone", "HP Jack";
+-		simple-audio-card,routing =
+-			"Line Out",	"LLOUT",
+-			"Line Out",	"RLOUT",
+-
+-			"LINE1R",	"Line In",
+-			"LINE1R",	"Line In",
+-
+-			"MIC3L",	"Mic Jack",
+-			"MIC3R",	"Mic Jack",
+-			"Mic Jack",	"Mic Bias",
+-
+-			"HP Jack",	"HPLOUT",
+-			"HP Jack",	"HPROUT";
+-		simple-audio-card,format = "dsp_b";
+-		simple-audio-card,bitclock-master = <&sound_master>;
+-		simple-audio-card,frame-master = <&sound_master>;
+-		simple-audio-card,bitclock-inversion;
+-
+-		simple-audio-card,cpu {
+-			sound-dai = <&mcasp1>;
+-		};
+-
+-		sound_master: simple-audio-card,codec {
+-			sound-dai = <&tlv320aic3007>;
+-			clocks = <&clkout2_clk>;
+-		};
+-	};
+-
+ 	/* For LVDS display at connector X25 */
+ 	backlight: backlight {
+ 		compatible = "pwm-backlight";
+<<<<<<< HEAD
+@@ -156,20 +118,6 @@
+=======
+@@ -169,19 +132,6 @@
+>>>>>>> refs #6267 [BSP][kernel] Test in progress
+ 		>;
+ 	};
+ 
+-	i2c4_pins_default: i2c4_pins_default {
+-		pinctrl-single,pins = <
+-			DRA7XX_CORE_IOPAD(0x3440, PIN_INPUT_PULLUP | MUX_MODE7)	/* (R6) gpmc_a0.i2c4_scl */
+-			DRA7XX_CORE_IOPAD(0x3444, PIN_INPUT_PULLUP | MUX_MODE7)	/* (T9) gpmc_a1.i2c4_sda */
+-		>;
+-	};
+-
+-	i2c4_pins_sleep: i2c4_pins_sleep {
+-		pinctrl-single,pins = <
+-			DRA7XX_CORE_IOPAD(0x3440, PIN_INPUT | MUX_MODE15)
+-			DRA7XX_CORE_IOPAD(0x3444, PIN_INPUT | MUX_MODE15)
+-		>;
+-	};
+<<<<<<< HEAD
+-
+ 	uart3_pins_default: uart3_pins_default {
+ 		pinctrl-single,pins = <
+ 			DRA7XX_CORE_IOPAD(0x3648, PIN_INPUT_SLEW | MUX_MODE0)	/* (V2) uart3_rxd */
+@@ -544,32 +492,6 @@
+=======
+ 
+ 	uart3_pins_default: uart3_pins_default {
+ 		pinctrl-single,pins = <
+@@ -604,65 +554,6 @@
+>>>>>>> refs #6267 [BSP][kernel] Test in progress
+ 	clock-frequency = <400000>;
+ };
+ 
+-&i2c4 {
+-	status = "okay";
+-	pinctrl-names = "default", "sleep";
+-	pinctrl-0 = <&i2c4_pins_default>;
+-	pinctrl-1 = <&i2c4_pins_sleep>;
+-	clock-frequency = <400000>;
+-
+-	tlv320aic3007: tlv320aic3007@18 {
+-		#sound-dai-cells = <0>;
+-		compatible = "ti,tlv320aic3007";
+-		reg = <0x18>;
+-		pinctrl-names = "default", "sleep";
+-		pinctrl-0 = <&clkout2_pins_default>;
+-		pinctrl-1 = <&clkout2_pins_sleep>;
+-		status = "okay";
+-		ai3x-micbias-vg = <2>;
+-		adc-settle-ms = <40>;
+-
+-		AVDD-supply = <&vdd_3v3>;
+-		IOVDD-supply = <&vdd_3v3>;
+-		DRVDD-supply = <&vdd_3v3>;
+-		DVDD-supply = <&aic_dvdd>;
+-	};
+-
+<<<<<<< HEAD
+=======
+-	ft5x06: ft5x06@38 {
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&edt_ts_irq_pin>;
+-		interrupt-parent = <&gpio8>;
+-		interrupts = <22 0>;
+-		status = "disabled";
+-	};
+-
+-	stmpe811: stmpe811@41 {
+-		status = "disabled";
+-		compatible = "st,stmpe811";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&stmpe_ts_irq_pin>;
+-
+-		reg = <0x41>;
+-		id = <0>;
+-		blocks = <0x5>;
+-		irq-gpio = <&gpio6 4 IRQ_TYPE_LEVEL_LOW>;
+-		wakeup-source;
+-
+-		stmpe_touchscreen {
+-			compatible = "st,stmpe-ts";
+-			st,sample-time = <4>;
+-			st,mod-12b = <1>;
+-			st,ref-sel = <0>;
+-			st,adc-freq = <1>;
+-			st,ave-ctrl = <1>;
+-			st,touch-det-delay = <2>;
+-			st,settling = <2>;
+-			st,fraction-z = <7>;
+-			st,i-drive = <1>;
+-		};
+-	};
+>>>>>>> refs #6267 [BSP][kernel] Test in progress
+-};
+-
+ &i2c5 {
+ 	status = "okay";
+ 	pinctrl-names = "default", "sleep";

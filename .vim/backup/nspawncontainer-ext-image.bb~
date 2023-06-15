@@ -1,0 +1,33 @@
+SUMMARY = "Safran example container with a firewall"
+
+# Include containers common
+require include/hm-containers-common.inc
+
+# System configuration
+PROJECT_APPLICATION += "systemd-conf-ext"
+PROJECT_APPLICATION += "base-files-conf-container-ext"
+
+# Add external firewall
+PROJECT_APPLICATION += "firewall-nftables-container-ext"
+PROJECT_APPLICATION += "systemd-network-conf-ext"
+
+# dhcprelay for dhcp packets redirection
+PROJECT_APPLICATION += "busybox-dhcprelay"
+PROJECT_APPLICATION += "eth-disconnect"
+
+# Hostapd
+PROJECT_APPLICATION += "hostapd"
+
+# SSH/SCP
+#PROJECT_APPLICATION += "dropbear dropbear-conf-default"
+#PROJECT_APPLICATION += "openssh-sshd openssh-scp openssh"
+#PROJECT_APPLICATION += "openssh-conf-default"
+
+# Rsyslog conf
+SAFRAN-APPLICATION-LOG              = "rsyslog"
+SAFRAN-APPLICATION-LOG-RSYSLOG-CONF = "rsyslog-conf-ext"
+
+# Include safran-container-minimal.bb
+require recipes-core/images/safran-container-minimal.bb
+
+FEATURE_PACKAGES_tools-debug = "packagegroup-hmos-tools-debug"

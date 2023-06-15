@@ -1,0 +1,237 @@
+/*
+ * comm_if.c
+ *
+ * Separated communication interface in case
+ * the physical layer change someday
+ *
+ * Created on: 22 march 2023
+ *  Author: Nil Croustillac
+ */
+//------------------------------------------------------------------------------
+// Includes
+//------------------------------------------------------------------------------
+// standard
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/select.h>
+
+//------------------------------------------------------------------------------
+// Defines
+//------------------------------------------------------------------------------
+#define COMM_IF_SERIALPORT_NAME "/dev/ttySC0"
+
+//------------------------------------------------------------------------------
+// Local types
+//------------------------------------------------------------------------------
+enum _comm_if_state {
+    COMM_IF_STATE_IDLE = 0,
+    COMM_IF_STATE_INIT = 1,
+};
+
+struct _comm_if_ctx {
+    int serial_fd;
+    int state;
+};
+
+//------------------------------------------------------------------------------
+// Forward declaration
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// Private variables
+//------------------------------------------------------------------------------
+static struct _comm_if_ctx _priv_ctx = { 0 };
+
+//------------------------------------------------------------------------------
+// Public API
+//------------------------------------------------------------------------------
+int comm_if_init(void)
+{
+    char action;
+    int rc = 0;
+    char buffer[128];
+    struct termios newtio;
+
+    // avoid bus reinitialisation
+    if ( COMM_IF_STATE_IDLE != _priv_ctx.state )
+    {
+        printf("serial port already initialized\n");
+        return -1;
+    }
+
+    //--------------------------------------------
+    // Open requested UART to communicate
+    //  with the device
+    //--------------------------------------------
+    _priv_ctx.serial_fd = open(COMM_IF_SERIALPORT_NAME,
+                               (O_RDWR | O_NOCTTY | O_NONBLOCK)); 
+    if ( _priv_ctx.serial_fd < 0 )
+    {
+        printf("Error while opening %s: %s\n",
+               COMM_IF_SERIALPORT_NAME, strerror(errno));
+        return -1;
+    }
+
+    // retrieve current configuration
+    tcgetattr(_priv_ctx.serial_fd, &newtio);
+
+    cfsetispeed(&newtio, B19200);
+    cfsetospeed(&newtio, B19200);
+
+    newtio.c_cflag &= ~PARENB;
+    newtio.c_cflag &= ~CSIZE;
+    newtio.c_cflag &= ~CRTSCTS;
+    newtio.c_cflag &= ~CSTOPB;
+    newtio.c_cflag |= CS8;
+    newtio.c_cflag |= (CLOCAL | CREAD);
+
+    newtio.c_iflag |= (IGNPAR| ICRNL);
+    //newtio.c_iflag &= ~IGNCR;
+    newtio.c_iflag |= (IXON | IXOFF | IXANY);
+    newtio.c_lflag &= ~ICANON;
+    newtio.c_lflag &= ~ECHO;
+    newtio.c_oflag &= ~OPOST;
+
+    // disable most of control characters
+    newtio.c_cc[VINTR]    = 0;     /* Ctrl-c */ 
+    newtio.c_cc[VQUIT]    = 0;     /* Ctrl-\ */
+    newtio.c_cc[VERASE]   = 0;     /* del */
+    newtio.c_cc[VKILL]    = 0;     /* @ */
+    newtio.c_cc[VEOF]     = 4;     /* Ctrl-d */
+    newtio.c_cc[VTIME]    = 0;     /* Inter-character time */
+    newtio.c_cc[VMIN]     = 1;     /* Blocking read*/
+    newtio.c_cc[VSWTC]    = 0;     /* '\0' */
+    newtio.c_cc[VSTART]   = 0;     /* Ctrl-q */ 
+    newtio.c_cc[VSTOP]    = 0;     /* Ctrl-s */
+    newtio.c_cc[VSUSP]    = 0;     /* Ctrl-z */
+    newtio.c_cc[VEOL]     = 0;     /* '\0' */
+    newtio.c_cc[VREPRINT] = 0;     /* Ctrl-r */
+    newtio.c_cc[VDISCARD] = 0;     /* Ctrl-u */
+    newtio.c_cc[VWERASE]  = 0;     /* Ctrl-w */
+    newtio.c_cc[VLNEXT]   = 0;     /* Ctrl-v */
+    newtio.c_cc[VEOL2]    = 0;     /* '\0' */
+
+    // apply configuration
+    rc = tcsetattr(_priv_ctx.serial_fd, TCSANOW, &newtio);
+    if ( rc )
+    {
+        printf("Error while setting attributes \n");
+        close(_priv_ctx.serial_fd);
+        return rc;
+    }
+
+    // update local state
+    _priv_ctx.state = COMM_IF_STATE_INIT;
+
+    return 0;
+}
+
+//------------------------------------------------------------------------------
+int comm_if_write(uint8_t * buf, int len)
+{
+    int rc;
+
+    // sanity check
+    if (! buf || ! len )
+    {
+        printf("Invalid params\n");
+        return -EINVAL;
+    }
+
+    // make sure the bus is initialized
+    if ( COMM_IF_STATE_IDLE == _priv_ctx.state )
+    {
+        printf("serial port not initialized\n");
+        return -1;
+    }
+
+    rc = write(_priv_ctx.serial_fd, buf, len);
+    if ( rc <= 0 )
+    {
+        printf("Error while sending command (rc=%d): %s\n", rc, strerror(errno));
+        return -1;
+    }
+
+    return rc;
+}
+
+//------------------------------------------------------------------------------
+int comm_if_read(uint8_t * buf, int len)
+{
+    int rc;
+
+    // sanity check
+    if (! buf || ! len )
+    {
+        printf("Invalid params\n");
+        return -EINVAL;
+    }
+
+    // make sure the bus is initialized
+    if ( COMM_IF_STATE_IDLE == _priv_ctx.state )
+    {
+        printf("serial port not initialized\n");
+        return -1;
+    }
+
+    rc = read(_priv_ctx.serial_fd, buf, len);
+    if ( rc <= 0 )
+    {
+        printf("No data received\n");
+    }
+
+    return rc;
+}
+
+//------------------------------------------------------------------------------
+int comm_if_read_wait(uint8_t * buf, int len, int msec_timeout)
+{
+    int rc;
+	fd_set set;
+	struct timeval timeout;
+
+    // sanity check
+    if (! buf || ! len )
+    {
+        printf("Invalid params\n");
+        return -EINVAL;
+    }
+
+    // make sure the bus is initialized
+    if ( COMM_IF_STATE_IDLE == _priv_ctx.state )
+    {
+        printf("serial port not initialized\n");
+        return -1;
+    }
+
+	FD_ZERO(&set);
+	FD_SET(_priv_ctx.serial_fd, &set);
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = (msec_timeout * 1000);
+
+	rc = select(_priv_ctx.serial_fd + 1, &set, NULL, NULL, &timeout);
+	if( -1 == rc )
+	{
+		printf("error attempting to read\n");
+		return -1;
+	}
+	else if( ! rc )
+	{
+		printf("timeout\n");
+		return -1;
+	}
+	
+    // data available, read max len
+    rc = read(_priv_ctx.serial_fd, buf, len);
+
+    return rc;
+}
+

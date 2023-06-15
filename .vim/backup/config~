@@ -1,0 +1,21 @@
+[Exec]
+	NotifyReady=yes
+	# 65536 x 10 (see systemd-nspawn man page)
+	PrivateUsers = 655360:65536
+	Boot=off
+	Parameters=/sbin/init
+	PrivateUsers=on
+	DropCapability=CAP_DAC_READ_SEARCH CAP_FOWNER CAP_FSETID CAP_IPC_OWNER CAP_LEASE CAP_LINUX_IMMUTABLE CAP_SYS_NICE CAP_SYS_PTRACE CAP_SYS_TTY_CONFIG CAP_SYS_RESOURCE CAP_SYS_BOOT CAP_AUDIT_WRITE CAP_AUDIT_CONTROL CAP_MKNOD
+	SystemCallFilter=~kexec_load open_by_handle_at init_module finit_module delete_module
+	KillSignal=SIGKILL
+
+[Network]
+	Private = yes
+	VirtualEthernetExtra = vethext:ethhost
+  Interface = ethext
+  Interface = wlan0
+
+[Files]
+  #Bind = /var/services/sdcreatefile
+  Bind = /var/services/modes
+

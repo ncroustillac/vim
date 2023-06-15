@@ -1,0 +1,6 @@
+[Path]
+PathExists=/var/services/eth-watcher/.eth_disconnected
+Unit=firewallwatcher@carrier.service
+
+[Install]
+WantedBy=multi-user.target

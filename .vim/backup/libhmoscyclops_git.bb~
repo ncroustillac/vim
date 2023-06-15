@@ -1,0 +1,83 @@
+DESCRIPTION = ""
+SECTION = "libs"
+LICENSE = "CLOSED"
+
+# Generate version
+inherit tools/safran-tools-extraversion
+
+PACKAGES += ""
+
+DEPENDS = "libhmos systemd"
+RDEPENDS_${PN} += "libhmos systemd"
+
+LIBHMOSCYCLOPS_GITURL  ?= "git.sds.safran/git-128/trans_os/lib_cyclops"
+LIBHMOSCYCLOPS_REV     ?= "${AUTOREV}"
+
+LIBHMOSCYCLOPS_GITOPTS ?= "protocol=https;branch=develop"
+
+SRC_URI = "git://${LIBHMOSCYCLOPS_GITURL};${LIBHMOSCYCLOPS_GITOPTS};name=libhmoscyclops"
+SRCREV = "${LIBHMOSCYCLOPS_REV}"
+
+SRCREV = "${AUTOREV}"
+SRCREV_FORMAT = "libhmoscyclops"
+PR = "r1"
+PV = "1.0+git${SRCPV}"
+
+S = "${WORKDIR}/git"
+
+inherit cmake systemd
+
+SYSTEMD_AUTO_ENABLE = "enable"
+
+do_install_append() {
+
+
+  # Used in RMC
+  install -m 777 -d ${D}/var/rmc/output
+  install -m 777 /dev/null ${D}/var/rmc/output/list.txt
+  install -m 777 -d ${D}/var/rmc/input/fetch/Transfers
+
+  # Used in fls-dispatcher
+  install -m 777 -d ${D}/var/fls-dispatcher/to_HEATS
+
+  install -m 777 -d ${D}/var/services/GSMenable/input
+
+  # Used in nor-installer
+  install -m 777 -d ${D}/var/notification/to_HEATS
+  install -m 777 -d ${D}/var/notification/from_HEATS
+
+  # Used by gsmsend
+  install -m 777 -d ${D}/var/GSM/fetch/Transfers
+
+  # Used by satellite
+  install -m 777 -d ${D}/var/sat/fetch/transfers
+  install -m 777 -d ${D}/var/services/sat/input
+
+  # Used by wifi
+  install -m 777 -d ${D}/var/services/wifi/input
+
+  # Used in installer for config extraction
+  install -m 777 -d ${D}/var/conf
+  install -m 777 -d ${D}/var/conf/HWCFG.DAT
+
+  # Used in filefetcher
+  install -m 777 -d ${D}/var/services/filefetcher/rmc/HV3
+  install -m 777 -d ${D}/var/services/filefetcher/rmc/CVFDR
+  install -m 777 -d ${D}/var/services/filefetcher/rmc/FADEX
+
+  install -m 777 -d ${D}/var/services/filefetcher/gsm/HV3
+  install -m 777 -d ${D}/var/services/filefetcher/gsm/CVFDR
+  install -m 777 -d ${D}/var/services/filefetcher/gsm/FADEX
+
+  install -m 777 -d ${D}/var/services/filefetcher/gsm/contents
+  install -m 777 -d ${D}/var/services/filefetcher/gsm/contents/result
+
+}
+
+FILES_${PN} += "/var/services/filefetcher/gsm/contents/result"
+FILES_${PN} += "/media/fetch"
+FILES_${PN} += "/var/rmc"
+FILES_${PN} += "/var/fls-dispatcher"
+FILES_${PN} += "/var/notification"
+FILES_${PN} += "/var/services/GSMenable/input"
+FILES_${PN} += "/var/services/sat/input"

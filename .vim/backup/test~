@@ -1,0 +1,14 @@
+#!/bin/sh
+
+PATH="/path/to/file-"
+
+for entry in /home/ncr/Documents/sdio*; do
+    case $(echo ${entry} | awk -F'[_.]' '{print $NF}') in
+        "enable")
+            echo "Cool"
+            ;;
+        "disable")
+            echo "Prout"
+            ;;
+    esac
+done

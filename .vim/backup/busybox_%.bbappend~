@@ -1,0 +1,25 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "file://hm-cleanup.cfg"
+SRC_URI += "file://hm-common.cfg"
+SRC_URI += "${@ 'file://uod-tools.cfg' if "hm-uod" in d.getVar('IMAGE_FEATURES', True) else ''}"
+
+SRC_URI += "file://dhcprelay.cfg"
+SRC_URI += "file://dhcprelay.service"
+
+PACKAGES += "${PN}-dhcprelay"
+
+FILES_${PN}-dhcprelay = "${systemd_system_unitdir}/dhcprelay.service"
+
+SYSTEMD_PACKAGES += "${PN}-dhcprelay"
+SYSTEMD_SERVICE_${PN}-dhcprelay = "dhcprelay.service"
+SYSTEMD_AUTO_ENABLE_${PN}-dhcprelay = "enable"
+
+inherit tools/safran-tools-sedinfiles
+SAFRAN_TOOLS_SEDINFILES_FILES += "${D}${systemd_system_unitdir}/dhcprelay.service"
+
+do_install_append () {
+  if grep -q "CONFIG_DHCPRELAY=y" ${B}/.config; then
+    install -m 0644 ${WORKDIR}/dhcprelay.service ${D}${systemd_system_unitdir}
+  fi
+}

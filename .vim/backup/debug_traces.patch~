@@ -1,0 +1,14 @@
+--- laird-backport-10.4.0.10/drivers/net/wireless/broadcom/brcm80211/brcmfmac/debug.h	2023-01-26 18:12:22.787972521 +0100
++++ laird-backport-10.4.0.10/drivers/net/wireless/broadcom/brcm80211/brcmfmac/debug_patched.h	2023-01-27 09:57:27.252912682 +0100
+@@ -69,7 +69,10 @@
+ 
+ /* For debug/tracing purposes treat info messages as errors */
+ #define brcmf_info brcmf_err
+-#define brcmf_dbg brcmf_err
++#define brcmf_dbg(lvl, fmt, ...)        \
++    do {                                \
++        brcmf_err(fmt, &&__VA_ARGS__);  \
++    } while(0)
+ 
+ 
+ __printf(3, 4)

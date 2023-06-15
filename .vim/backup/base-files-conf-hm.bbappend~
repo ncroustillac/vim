@@ -1,0 +1,9 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+
+SRC_URI += "file://0001-modules_disabled.patch"
+SRC_URI += "file://fstab"
+
+
+do_install_append() {
+  install -d ${D}/var/oscfg
+}

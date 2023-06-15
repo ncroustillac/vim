@@ -1,0 +1,64 @@
+[ ca ]
+default_ca         = CA_default
+
+[ CA_default ]
+dir                = /home/ncr/Documents/certificates/pki_hv3_crl/root-external
+database           = $dir/index.txt
+serial             = $dir/serial
+private_key        = $dir/private_key.pem
+certificate        = $dir/certificate.pem
+new_certs_dir      = $dir/certs
+name_opt           = ca_default
+cert_opt           = ca_default
+default_md         = sha512
+default_crl_days   = 10000
+policy             = ca_policy
+
+# Certificate Signature Request
+
+[ req ]
+encrypt_key        = no
+distinguished_name = root_ca_dn
+string_mask        = nombstr
+x509_extensions    = root_ca_ext
+prompt             = no
+
+
+# Distinguished name
+
+[ root_ca_dn ]
+organizationalUnitName = Safran Electronics and Defense
+organizationName       = SAFRAN
+countryName            = FR
+commonName             = SAFRAN EXTERNAL CA n
+surname                = CA surname
+givenName              = CA given name
+serialNumber           = CA SerialNumber
+countryName            = FR
+localityName           = MSY
+stateOrProvinceName    = IDF
+title                  = This is the CA certificate
+userId                 = MMA
+
+# Certificate extensions
+
+[ root_ca_ext ]
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always
+keyUsage               = critical,keyCertSign,cRLSign
+basicConstraints       = CA:TRUE
+certificatePolicies    = 2.5.29.32.0
+#certificatePolicies    = 1.3.6.1.4.1.881.5.3.4
+nsComment              = Root Certificate Authority for external devices (authentication, data signature, data ciphering)
+
+[ ca_policy ]
+organizationName       = supplied
+organizationalUnitName = supplied
+commonName             = supplied
+surname                = supplied
+serialNumber           = supplied
+countryName            = supplied
+localityName           = supplied
+stateOrProvinceName    = supplied
+title                  = supplied
+userId                 = supplied

@@ -1,0 +1,5 @@
+<<<<<<< HEAD
+CONFIG_TI_PIPE3=y
+=======
+CONFIG_TI_PIPE3=m
+>>>>>>> refs #6268 [BSP][Kernel] Tests done

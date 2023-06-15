@@ -1,0 +1,11 @@
+[Match]
+Name=ethext
+
+[Network]
+ConfigureWithoutCarrier=true
+
+[Route]
+Destination=147.138.26.15/32
+
+[Address]
+Address=147.138.26.15/24

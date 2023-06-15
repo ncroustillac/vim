@@ -1,0 +1,24 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# ROOT CA
+#------------------------------------------------------------------------------
+openssl genrsa -out root_ca.key 4096
+openssl req -x509 -new -nodes -key root_ca.key -sha256 -days 3650 -out root_ca.crt
+openssl x509 -outform pem -in root_ca.crt -out root_ca.pem
+
+#------------------------------------------------------------------------------
+# USER
+#------------------------------------------------------------------------------
+### CA ###
+# key for certificate authority
+openssl genrsa -out user_ca.key 4096
+openssl req -new -key user_ca.key -out user_ca_csr.pem
+
+# generate certificate signing request for certificate authority using ROOT CA
+openssl x509 -req -in user_ca_csr.pem -signkey root_ca.pem -out user_ca.crt
+
+### Certificate ###
+openssl genrsa -out user_key.pem 2048   # key
+openssl req -new -key user_key.pem -out user_csr.pem    #CSR
+
+openssl x509 -req -in user_csr.pem -CA root_ca.pem -CAkey user_ca.key -CAcreateserial -out user_certificate.pem # final certificate

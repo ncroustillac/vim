@@ -1,0 +1,118 @@
+#!/bin/sh
+#
+listen_dir="/containers/container-as/var/services/GSMenable/input"
+mbimcli_conf="/containers/container-as/storage/mbim-network.conf"
+
+activatefile="$listen_dir/.GSM_activate"
+deactivatefile="$listen_dir/.GSM_deactivate"
+
+f_notify_success()
+{
+    touch /containers/container-as/var/notification/to_HEATS/.success_GSM_ON
+    exit 0
+}
+
+f_notify_failure()
+{
+    touch /containers/container-as/var/notification/to_HEATS/.fail_GSM_ON
+    exit 1
+}
+
+f_wait_modem()
+{
+    for ((t=0; t<30; t++))
+    {
+        if [[ -e /dev/cdc-wdm0 && -e /sys/class/net/wwan0 ]];then
+            return 0
+        else
+            printf "GSM modem not yet present...waiting %d s\n" $t
+            sleep 1
+        fi
+    }
+    printf "Could not detect GSM modem"
+    f_notify_failure
+}
+
+activate_iface ()
+{
+    rm $activatefile
+
+    #Control GSM module GPIOs to activate radio
+    /usr/bin/hv3gpio -g on
+
+    f_wait_modem
+
+    #load config from emmc
+    if [ -e $mbimcli_conf ];then
+        source $mbimcli_conf
+        profile_import="--profile $mbimcli_conf"
+    fi
+
+    #load config from emmc
+    if [ -n "$PIN" ];then
+        mbimcli -d /dev/cdc-wdm0 -p --enter-pin=$PIN
+    fi
+
+    #Connect to service provider and APN
+    mbim-network $profile_import /dev/cdc-wdm0 start
+    if [ $? -ne 0 ];then
+       f_notify_failure
+    fi
+
+    #Bing up the link an systemd-networkd config for wwan interface
+    ip link set wwan0 up
+
+    #Wait for an IP address
+    for ((t=0; t<30; t++))
+    {
+        if [ $(ip addr show wwan0  | awk '$1 == "inet" {print $2}') ]; then
+            printf "DHCP result : %s" $(ip addr show wwan0  | awk '$1 ~ /^inet/ {print $2}')
+            f_notify_success
+        else
+            printf "Waiting for link...\n"
+            sleep 5
+        fi
+    }
+    printf "Timeout. Failed to establish GSM link.\n"
+    f_notify_failure
+}
+
+deactivate_iface ()
+{
+    rm $deactivatefile
+
+    ip link set wwan0 down
+
+    mbim-network /dev/cdc-wdm0 stop
+
+    /usr/bin/hv3gpio -g off
+
+    for ((t=0; t<30; t++))
+    {
+        if [[ -e /dev/cdc-wdm0 && -e /sys/class/net/wwan0 ]];then
+           sleep 1
+        else
+           touch /containers/container-as/var/notification/to_HEATS/.success_GSM_OFF
+           exit 0
+        fi
+    }
+    touch /containers/container-as/var/notification/to_HEATS/.fail_GSM_OFF
+    exit 1
+}
+
+for entry in $listen_dir/.*
+do
+    case $entry in
+    .)
+        ;;
+    ..)
+        ;;
+    $activatefile)
+        activate_iface
+        ;;
+    $deactivatefile)
+        deactivate_iface
+        ;;
+    *)
+    esac
+done

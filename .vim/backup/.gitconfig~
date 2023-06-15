@@ -1,0 +1,24 @@
+[credential]
+	helper = store --file ~/.git_cred_secure
+[user]
+	email = nilcroustillac@gmail.com
+	name = ncc
+[diff]
+	tool = meld
+[difftool]
+	prompt = false
+[safe]
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmos/1.0+gitAUTOINC+10a3a19808-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libslfs/1.0+gitAUTOINC+60d95a80f6-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+ca2d56a1ca-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/pttools/1.0+gitAUTOINC+1bb1ed0fdd_9c8a31b5c0-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/installer/1.0+gitAUTOINC+9c8a31b5c0_1bb1ed0fdd-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/pttools/1.0+gitAUTOINC+1bb1ed0fdd_9c8a31b5c0-r1/git/installer
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/installer/1.0+gitAUTOINC+9c8a31b5c0_1bb1ed0fdd-r1/git/lib_pt
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+c45aeeae56-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+fee9d01b66-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+4ad40ae8c8-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+0b51e5a671-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+4520d99a24-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+22806b5517-r1/git
+	directory = /home/ncr/Documents/dev/entrypoint/setup-yocto/hv3-zeus/build/tmp-glibc/work/armv7at2hf-neon-oe-linux-gnueabi/libhmoscyclops/1.0+gitAUTOINC+a89b66d212-r1/git

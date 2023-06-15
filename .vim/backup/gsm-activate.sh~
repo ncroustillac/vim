@@ -1,0 +1,143 @@
+#! /bin/sh
+# This script allows to switch between GSM and Wifi mode
+# Usage : ./gsm-activate.sh <GSMON/GSMOFF>
+gpio_gsm_module_rst_pin="GSM_MODULE_RESET"
+gpio_mux_usb_cmd_pin="MUX_USB_CMD"
+gpio_gsm_module_wireless_dis_pin="GSM_MODULE_WIRELESS_DISABLE"
+gpio_gsm_module_gps_dis_pin="GSM_MODULE_GPS_DISABLE"
+gpio_gsm_module_pwr_on_pin="GSM_MODULE_PWR_ON"
+
+f_usage(){
+  echo -n "\
+  USAGE   : ${0} <GSMON/GSMOFF>\
+  EXAMPLE : ${0} GSMON\
+            ${0} GSMOFF\
+"
+}
+#########################
+f_connect_with_pin_code(){
+  echo "Enter pin code:$1"
+  mbimcli -d /dev/cdc-wdm0 -p --enter-pin=$1
+}
+#########################
+f_connect_to_gsm(){
+ echo "APN:$1"
+ echo "mbimcli -d /dev/cdc-wdm0 -p --connect=apn='$1'"
+mbimcli -d /dev/cdc-wdm0 -p --connect=apn=$1|
+while IFS= read -r line;do
+           if  echo "$line"  |grep -q "IP \[0\]" ; then
+              echo "IP FOUND=$line"
+              subline=$line
+              IFS=' '
+              read -a ARRAY_OF_STR<<< "$subline"
+              gsm_address=${ARRAY_OF_STR[2]}
+               #echo "gsm address=$gsm_address"
+              cmd="ip addr add $gsm_address dev wwan0"
+              echo "$cmd"
+              eval $cmd
+               ip link set wwan0 up
+           fi
+done
+}
+#########################
+f_add_ip_route(){
+  echo "add ip address:$1"
+  ip r add $1 dev wwan0
+
+}
+
+f_deactivate_gsm(){
+  gpiosysset "${gpio_gsm_module_pwr_on_pin}" 0
+}
+
+f_remove_ftp_server(){
+  mbimcli -d /dev/cdc-wdm0 -p --disconnect
+  ip addr flush wwan0
+}
+<<<<<<< HEAD
+
+case "$(echo $1 | tr 'a-z' 'A-Z')" in
+  "GSMON")
+    f_activate_gsm
+    sleep 2
+    f_add_ftp_server
+=======
+nrpara=$#
+if [[ $nrpara -ne 2  && $nrpara -ne 1 ]]; then
+  echo "Script argument error:$nrpara"
+  echo "Recommendation"
+  echo ">gsm-enable GSMON gsm-config.txt"
+  echo ">gsm-enable GSMOFF"
+  exit;
+fi
+  
+filename=$2
+if test -f "$filename" ; then
+   echo "This file exists:$filename"
+else
+   echo "This file does not exist:$filename"
+   exit 1
+fi
+echo "GSM Configuration file name:$filename"
+nrpara=0
+#echo "list_of_compatible=> line=$firstline FILE=$filename ABS PATH=$abspath first"
+while read line; do
+    #echo "$line"
+    subline=$line
+    IFS='='
+    read -a ARRAY_OF_STR<<< "$subline"
+    if [[ "$line" =~ "ftpserver" ]]; then
+     ftpaddress=${ARRAY_OF_STR[1]}
+     echo "ftp adress=$ftpaddress"
+      nrpara=$((nrpara+1))
+   elif [[ "$line" =~ "apn" ]] ; then
+     apn=${ARRAY_OF_STR[1]}
+     echo "apn=$apn"
+     nrpara=$((nrpara+1))
+   elif [[ "$line" =~ "pin" ]] ; then
+     pin=${ARRAY_OF_STR[1]}
+     echo "pin=$pin"
+     nrpara=$((nrpara+1))
+   fi
+
+    n=$((n+1))
+  
+done < $filename
+echo "Number argument in config file ($2)=$nrpara"
+
+if [[ -n "$pin" ]]; then 
+   PINCODE=$pin
+   nrpara=$((nrpara+1))
+fi
+if [[ -n "$apn" ]]; then 
+   APN=$apn
+   nrpara=$((nrpara+1))
+else
+   echo "Important Error=>Missing APN"
+   exit
+fi
+if [[ -n "$ftpaddress" ]]; then 
+   FTPIP=$pin
+   nrpara=$((nrpara+1))
+fi
+
+case "$(echo $1 | tr 'a-z' 'A-Z')" in
+  "GSMON")
+    if [[ -n "$PINCODE" ]]; then
+      f_connect_with_pin_code $PINCODE 
+    fi
+    f_connect_to_gsm $APN
+    if [[ -n "$FTPIP" ]]; then
+      f_add_ip_route  $FTPIP
+    fi
+>>>>>>> refs #6268 [BSP][kernel] Test in progress v2
+    ;;
+  "GSMOFF")
+    f_deactivate_gsm
+    f_remove_ftp_server
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+

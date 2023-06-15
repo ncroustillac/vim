@@ -1,0 +1,79 @@
+#!/bin/sh
+#--------------------------------------------------------------------------------
+# Script that overwrite configuration using OSCFG prior to run hostapd
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# TODO:
+#--------------------------------------------------------------------------------
+# Default configuration and tools
+HOSTAPD=`which hostapd 2> /dev/null`
+HOSTAPD_CLI=`which hostapd_cli 2> /dev/null`
+
+PID_FILE=/run/hostapd-wifi.pid
+DEFAULT_CONF_FILE=/etc/hostapd-wifi-default.conf
+REWRITTEN_CONF_FILE=/var/hostapd-wifi/hostapd-wifi.conf
+
+OSCONFIG_FILE=/var/hostapd-wifi/Com_WIFI_SSID.conf
+
+
+#--------------------------------------------------------------------------------
+# FUNCTIONS
+#--------------------------------------------------------------------------------
+process_file() {
+    if [ ! -f ${DEFAULT_CONF_FILE} ]; then
+        echo -e "[FATAL] Default config file not found: ${DEFAULT_CONF_FILE}"
+        exit 1
+    fi
+
+    # copy default file in order to overwrite requested values
+    cp ${DEFAULT_CONF_FILE} ${REWRITTEN_CONF_FILE}
+
+    # keep default values if os configuration file is missing
+    if [ ! -f ${OSCONFIG_FILE} ]; then
+        echo -e "[ERROR] OS config file not found: ${OSCONFIG_FILE}"
+        return
+    fi
+
+    # loop over parameters in config file
+    while IFS="=" read param value;do
+        local occurences=$(grep "${param}=" ${REWRITTEN_CONF_FILE} | wc -l)
+        if [ ${occurences} -gt 1 ]; then
+            echo -e "[NOTICE] Skip parameter '${param}': too many occurences"
+            continue
+        fi
+
+        if [ ${occurences} -lt 1 ]; then
+            echo -e "[NOTICE] Skip parameter '${param}': not found"
+            continue
+        fi
+
+        echo -e "[NOTICE] Replace parameter ${param} with value ${value}"
+        sed -i "s/^\(${param}=\).*/\1${value}/" ${REWRITTEN_CONF_FILE}
+    done < ${OSCONFIG_FILE}
+}
+
+parse_and_start() {
+    # process configuration file
+    process_file
+
+    # run hostapd in background mode
+    echo -e "[NOTICE] Run hostapd..."
+    ${HOSTAPD} ${REWRITTEN_CONF_FILE} -P ${PID_FILE} -B
+    ${HOSTAPD_CLI} -p /var/hostapd-wifi -a /usr/services/hostapd-wifi/hostapd-wifi-hooks -B
+}
+
+#--------------------------------------------------------------------------------
+# MAIN
+#--------------------------------------------------------------------------------
+if [ $# != 1 ]; then
+    echo -e "[FATAL] Too many arguments. Exit..."
+    exit 1
+fi
+
+if [ "$1" == "start" ]; then
+    parse_and_start
+else
+    echo -e "[FATAL] Unexpected argument: $1. Exit..."
+    exit 1
+fi

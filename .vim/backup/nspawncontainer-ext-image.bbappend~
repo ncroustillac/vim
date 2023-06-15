@@ -1,0 +1,14 @@
+#SAFRAN-APPLICATION-LOG-RSYSLOG-CONF_remove += "rsyslog-conf-ext"
+
+# Removing HM EXT firewall and adding HV3 EXT firewall
+PROJECT_APPLICATION_remove += "firewall-nftables-container-ext"
+PROJECT_APPLICATION += "firewall-hv3-nftables-container-ext"
+
+PROJECT_APPLICATION += "dropbear dropbear-conf-default"
+
+PROJECT_APPLICATION += "busybox-dhcprelay"
+PROJECT_APPLICATION += "ethtool"
+PROJECT_APPLICATION += "tcpdump"
+PROJECT_APPLICATION += "hostapd-wifi"
+PROJECT_APPLICATION += "hostapd-utils"
+PROJECT_APPLICATION += "netcat-openbsd"

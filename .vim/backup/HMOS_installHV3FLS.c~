@@ -1,0 +1,142 @@
+/*
+ =======================================================================
+ Name        : HMOS_installHV3FLS.c
+ Company     : Safran Electronics & Defense
+ Version     :
+ Copyright   : Safran Electronics & Defense
+ Description : This source file defines the API service HMOS_installHV3FLS
+ =======================================================================
+ */
+
+/**************************************
+ * IMPORTED COMPONENTS
+ **************************************/
+#include <hmos_cyclops_installer.h>
+#include <hmos.h>
+#include <string.h>
+#include <stdio.h>
+
+/**************************************
+ * LOCAL CONST
+ **************************************/
+/* None */
+
+/**************************************
+ * GLOBAL VARIABLES
+* *************************************/
+#define PATH_TO_SD_INSTALL "/var/services/filefetcher/rmc/HV3"
+#define PATH_TO_GSM_DOWNLOAD "/var/services/filefetcher/gsm/contents"
+#define MAX_PATH_SIZE 100
+#define FILE_NAME_TRIGGER ".completed"   // File name that will start the installation
+
+/**************************************
+ * LOCAL VARIABLES
+ **************************************/
+/* None */
+/**************************************
+ * LOCAL PROTOTYPES
+ **************************************/
+e_hmos_retcode create_sd_file(const char *file_name);
+e_hmos_retcode create_gsm_file(const char *file_name);
+
+/**************************************
+ * EXTERNAL FUNCTIONS
+ **************************************/
+
+/* Start install of the FLS in the source_file */
+e_hmos_retcode HMOS_installHV3FLS (e_hmos_install_method install_method, const st_hmos_source_file source_file)
+{
+    e_hmos_retcode ret = HMOS_RETCODE_ERROR;
+    char *completed=FILE_NAME_TRIGGER;
+
+    if (source_file.FLS1_name[0] == '\0' && source_file.FLS2_name[0] == '\0' && source_file.FLS3_name[0] == '\0')
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR, "%s: error, no source file provided", __func__);
+    }
+
+    switch (install_method)
+    {
+        case HMOS_USB_SD:
+            
+            /* Create request files */
+            create_sd_file(source_file.FLS1_name);
+            create_sd_file(source_file.FLS2_name);
+            create_sd_file(source_file.FLS3_name);
+            
+            /* Start install */
+            ret = create_sd_file(completed);
+            break;
+        case HMOS_GSM:
+
+            /* Create request files */
+            ret = create_gsm_file(source_file.FLS1_name);
+            ret = create_gsm_file(source_file.FLS2_name);
+            ret = create_gsm_file(source_file.FLS3_name);
+            
+            /* Start install */
+            ret = create_gsm_file(completed);
+            break;
+        default:
+            ret = HMOS_RETCODE_ERROR;
+    }
+
+    return ret;
+}
+
+
+/**************************************
+ * LOCAL FUNCTIONS
+ **************************************/
+e_hmos_retcode create_sd_file(const char *file_name)
+{
+    /* Check if the file name is empty */
+    if (file_name[0] == '\0')
+    {
+        return HMOS_RETCODE_SUCCESS;
+    }
+
+    char *path=PATH_TO_SD_INSTALL;
+    char full_path[MAX_PATH_SIZE];
+    mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP; //0660
+
+    /* Concatenate path and file name */
+    snprintf(full_path, MAX_PATH_SIZE, "%s/%s", path, file_name);
+
+    /* Create file from path */
+    if (creat(full_path, mode) == -1)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR, "%s: error while creating file (full path=%s, errno=%d)", __func__, full_path, errno);
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE,"Errno = %d : %s", errno, strerror(errno));
+        return HMOS_RETCODE_ERROR;
+    }
+
+    HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "%s: file created \"%s\"", __func__, file_name);
+    return HMOS_RETCODE_SUCCESS;
+}
+
+e_hmos_retcode create_gsm_file(const char *file_name)
+{
+    /* Check if the file name is empty */
+    if (file_name[0] == '\0')
+    {
+        return HMOS_RETCODE_SUCCESS;
+    }
+
+    char *path=PATH_TO_GSM_DOWNLOAD;
+    char full_path[MAX_PATH_SIZE];
+    mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP; //0660
+
+    /* Concatenate path and file name */
+    snprintf(full_path, MAX_PATH_SIZE, "%s/%s", path, file_name);
+
+    /* Create file from path */
+    if (creat(full_path, mode) == -1)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR, "%s: error while creating file (full path=%s, errno=%d)", __func__, full_path, errno);
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE,"Errno = %d : %s", errno, strerror(errno));
+        return HMOS_RETCODE_ERROR;
+    }
+
+    HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "%s: file created \"%s\"", __func__, file_name);
+    return HMOS_RETCODE_SUCCESS;
+}

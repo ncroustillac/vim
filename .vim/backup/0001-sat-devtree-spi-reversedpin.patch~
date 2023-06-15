@@ -1,0 +1,11 @@
+--- git/arch/arm/boot/dts/am57xx-phycore-common.dtsi	2023-03-22 14:58:11.386448129 +0100
++++ git/arch/arm/boot/dts/am57xx-phycore-common_patched.dtsi	2023-03-22 15:03:25.059206241 +0100
+@@ -572,8 +572,6 @@
+ 	status = "okay";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&mcspi1_pins_default>;
+-
+-	ti,pindir-d0-out-d1-in;
+ };
+ 
+ /* NOTE: support added for pcie2 in endpoint mode

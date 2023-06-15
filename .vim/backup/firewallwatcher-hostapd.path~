@@ -1,0 +1,6 @@
+[Path]
+PathModified=/var/services/acct-authorized/acct-authorized-eth
+PathModified=/var/services/acct-authorized/acct-authorized-wifi
+
+[Install]
+WantedBy=multi-user.target

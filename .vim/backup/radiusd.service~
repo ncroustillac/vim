@@ -1,0 +1,13 @@
+[Unit]
+Description=FreeRADIUS high performance RADIUS server.
+After=syslog.target network.target container-ext.service
+
+[Service]
+# The service still needs to be hardened using the template service file
+
+Type=notify
+PIDFile=/run/radiusd/radiusd.pid
+ExecStartPre=@BASE_BINDIR@/sh /var/services/freeradius/parse_config.sh
+ExecStart=@SBINDIR@/radiusd -d @SYSCONFDIR@/raddb
+ExecReload=@SBINDIR@/radiusd -C
+ExecReload=@BASE_BINDIR@/kill -HUP $MAINPID

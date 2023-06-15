@@ -1,0 +1,93 @@
+diff --git a/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi b/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
+<<<<<<< HEAD
+index 46cc8c1b4b02..126e5db05015 100644
+=======
+index 2450465bcbdc..85840993fd07 100644
+>>>>>>> refs #6267 [BSP][kernel] Test in progress
+--- a/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
++++ b/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
+@@ -9,7 +9,6 @@
+ 
+ / {
+ 	aliases {
+-		display0 = &lcd2;
+ 		display1 = &hdmi0;
+ 
+ 		sound0 = &rdk_audio;
+<<<<<<< HEAD
+@@ -121,18 +120,6 @@
+=======
+@@ -121,17 +120,6 @@
+>>>>>>> refs #6267 [BSP][kernel] Test in progress
+ 		status = "disabled";
+ 	};
+ 
+-	lcd2: display {
+-		status = "disabled";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&lcd_pins &lcd_pins_iodelay_conf>;
+-
+-		label = "lcd2";
+-
+-		backlight = <&backlight>;
+-		enable-gpios = <&gpio8 23 GPIO_ACTIVE_LOW>;
+-	};
+-
+<<<<<<< HEAD
+-
+ 	bt_fixed: fixedregulator-bt {
+ 		compatible = "regulator-fixed";
+ 		status = "disabled";
+@@ -420,40 +407,6 @@
+=======
+ 	/* For wilink8 interface at connector X26 */
+ 	wlan_fixed: fixedregulator-wlan {
+ 		compatible = "regulator-fixed";
+@@ -433,39 +421,6 @@
+>>>>>>> refs #6267 [BSP][kernel] Test in progress
+ 		>;
+ 	};
+ 
+-        lcd_pins: pinmux_lcd {
+-                pinctrl-single,pins = <
+-			DRA7XX_CORE_IOPAD(0x3558, PIN_OUTPUT | MUX_MODE4 | SLEWCONTROL | MODE_SELECT)   /* (G2) vin2a_de0.vout2_de */
+-			DRA7XX_CORE_IOPAD(0x355c, PIN_OUTPUT | MUX_MODE4 | SLEWCONTROL | MODE_SELECT)   /* (H7) vin2a_fld0.vout2_clk */
+-			DRA7XX_CORE_IOPAD(0x3560, PIN_OUTPUT | MUX_MODE4 | SLEWCONTROL | MODE_SELECT)   /* (G1) vin2a_hsync0.vout2_hsync */
+-			DRA7XX_CORE_IOPAD(0x3564, PIN_OUTPUT | MUX_MODE4 | SLEWCONTROL | MODE_SELECT)   /* (G6) vin2a_vsync0.vout2_vsync */
+-			DRA7XX_CORE_IOPAD(0x3638, PIN_OUTPUT_PULLDOWN | MUX_MODE14)			/* (A10) vout1_d23.gpio8_23 */
+-			DRA7XX_CORE_IOPAD(0x36ac, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (B14) mcasp1_aclkr.vout2_d0 */
+-			DRA7XX_CORE_IOPAD(0x36b0, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (J14) mcasp1_fsr.vout2_d1 */
+-			DRA7XX_CORE_IOPAD(0x36bc, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (G13) mcasp1_axr2.vout2_d2 */
+-			DRA7XX_CORE_IOPAD(0x36c0, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (J11) mcasp1_axr3.vout2_d3 */
+-			DRA7XX_CORE_IOPAD(0x36c4, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (E12) mcasp1_axr4.vout2_d4 */
+-			DRA7XX_CORE_IOPAD(0x36c8, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (F13) mcasp1_axr5.vout2_d5 */
+-			DRA7XX_CORE_IOPAD(0x36cc, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (C12) mcasp1_axr6.vout2_d6 */
+-			DRA7XX_CORE_IOPAD(0x36d0, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (D12) mcasp1_axr7.vout2_d7 */
+-			DRA7XX_CORE_IOPAD(0x36fc, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (E15) mcasp2_aclkr.vout2_d8 */
+-			DRA7XX_CORE_IOPAD(0x3700, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (A20) mcasp2_fsr.vout2_d9 */
+-			DRA7XX_CORE_IOPAD(0x3704, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (B15) mcasp2_axr0.vout2_d10 */
+-			DRA7XX_CORE_IOPAD(0x3708, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (A15) mcasp2_axr1.vout2_d11 */
+-			DRA7XX_CORE_IOPAD(0x3714, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (D15) mcasp2_axr4.vout2_d12 */
+-			DRA7XX_CORE_IOPAD(0x3718, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (B16) mcasp2_axr5.vout2_d13 */
+-			DRA7XX_CORE_IOPAD(0x371c, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (B17) mcasp2_axr6.vout2_d14 */
+-			DRA7XX_CORE_IOPAD(0x3720, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (A17) mcasp2_axr7.vout2_d15 */
+-			DRA7XX_CORE_IOPAD(0x3734, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (C18) mcasp4_aclkx.vout2_d16 */
+-			DRA7XX_CORE_IOPAD(0x3738, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (A21) mcasp4_fsx.vout2_d17 */
+-			DRA7XX_CORE_IOPAD(0x373c, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (G16) mcasp4_axr0.vout2_d18 */
+-			DRA7XX_CORE_IOPAD(0x3740, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (D17) mcasp4_axr1.vout2_d19 */
+-			DRA7XX_CORE_IOPAD(0x3744, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (AA3) mcasp5_aclkx.vout2_d20 */
+-			DRA7XX_CORE_IOPAD(0x3748, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (AB9) mcasp5_fsx.vout2_d21 */
+-			DRA7XX_CORE_IOPAD(0x374c, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (AB3) mcasp5_axr0.vout2_d22 */
+-			DRA7XX_CORE_IOPAD(0x3750, PIN_OUTPUT | MUX_MODE6 | SLEWCONTROL | MODE_SELECT)   /* (AA4) mcasp5_axr1.vout2_d23 */
+-		>;
+-	};
+<<<<<<< HEAD
+-
+ 	mmc3_pins_default: mmc3_pins_default {
+ 		pinctrl-single,pins = <
+ 			DRA7XX_CORE_IOPAD(0x377c, PIN_INPUT_PULLUP | MODE_SELECT | MUX_MODE0)	/* (AD4) mmc3_clk */
+=======
+ 
+ 	mmc3_pins_default: mmc3_pins_default {
+ 		pinctrl-single,pins = <
+>>>>>>> refs #6267 [BSP][kernel] Test in progress

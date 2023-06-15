@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# Author : Cedric Berland <cedric.berland@safrangroup.com>
+# Description : script used to provides configuration to the signature checker
+
+# Notable informations :
+#   - All configuration item described with "(list)" are a list separated by a
+#     space. (eg. "myitem1 myitem2 ...")
+
+# =============================================================================
+# Options for signature checker script
+
+# Matchword to replace with the real PN
+CONF_PN_PATTERN="SIGCHECK_PN_TO_REPLACE"
+
+# -----------------------------------------------------------------------------
+# PKI options
+
+# Folder where the certificate are stored
+CONF_PKI_FOLDER="/var/services/signaturechecker/der/"
+# Allowed certificate extension to search in CONF_PKI_FOLDER (list)
+CONF_PKI_FILE_EXTENSION=".der"
+
+# Path for the allow deny list
+CONF_PKIPARAM_PATH="/var/services/signaturechecker/pkitest/test" # Single item ? A List ?
+
+# -----------------------------------------------------------------------------
+# SIG options
+
+# Folder where the verified signature file are store
+CONF_SIG_FOLDER="/var/services/signaturechecker/sif/"
+# Allowed SIG file extension (eg. ".SIF")
+CONF_SIG_FILE_EXTENSION=".SIF"
+
+CONF_NB_EXPECTED_SIF=1
+
+# -----------------------------------------------------------------------------
+# Destination path
+
+CONF_TEMP_FOLDER="/var/services/signaturechecker/temp/"
+
+# if not found in CONF_DESTINATION, use default path
+CONF_DEFAULT_DESTINATION="/var/services/fls-dispatcher/input/${CONF_PN_PATTERN}/"
+
+# Destination for each type of extension
+declare -A CONF_DESTINATION
+# /var/services/signaturechecker/luh to be replaced by true path once
+# dl_agent has added functionality to retrieve LUH in correct path
+CONF_DESTINATION[".*.LUH"]="${CONF_DEFAULT_DESTINATION} /var/services/signaturechecker/luh"
+CONF_DESTINATION[".*.SIF"]="${CONF_DEFAULT_DESTINATION} /var/services/signaturechecker/sif/"
+CONF_DESTINATION[".*.cmp"]="${CONF_DEFAULT_DESTINATION} /var/services/signaturechecker/cmp"
+
+# =============================================================================

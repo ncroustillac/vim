@@ -1,0 +1,10 @@
+[Unit]
+Description=Copy conf from emmc
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/services/initconf/initconf.sh
+
+[Install]
+RequiredBy=multi-user.target

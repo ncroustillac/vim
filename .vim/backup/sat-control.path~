@@ -1,0 +1,10 @@
+[Unit]
+Description="Monitoring containers/container-as/var/services/sat/input for new files"
+
+[Path]
+PathModified=/containers/container-as/var/services/sat/input
+Unit=sat-control.service
+
+[Install]
+WantedBy=multi-user.target
+Also=sat-control.path

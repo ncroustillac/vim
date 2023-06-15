@@ -1,0 +1,28 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+
+PACKAGECONFIG_remove = "python"
+SYSTEMD_AUTO_ENABLE_${PN} = "enable"
+
+SRC_URI += "file://defconfig"
+# runtime configuration for hostapd
+SRC_URI += "file://hostapd.conf"
+SRC_URI += "file://hostapd-hooks"
+SRC_URI += "file://hostapd_cli.service"
+
+inherit tools/safran-tools-sedinfiles
+SAFRAN_TOOLS_SEDINFILES_FILES += "${D}${sysconfdir}/hostapd.conf"
+
+do_install_append() {
+    install -d ${D}/var/hostapd
+    install -d ${D}/usr/services/hostapd
+    install -m 0755 ${WORKDIR}/hostapd-hooks ${D}/usr/services/hostapd
+    
+    install -m 0644 ${WORKDIR}/hostapd_cli.service ${D}${systemd_unitdir}/system/
+    sed -i -e 's,@SBINDIR@,${sbindir},g' -e 's,@SYSCONFDIR@,${sysconfdir},g' ${D}${systemd_unitdir}/system/hostapd_cli.service
+
+    install -m 0644 ${WORKDIR}/hostapd.conf ${D}${sysconfdir}
+}
+
+FILES_${PN} += "${sysconfdir}/hostapd.conf"
+FILES_${PN} += "/usr/services/hostapd/hostapd-hooks"
+FILES_${PN} += "${systemd_unitdir}/system/hostapd_cli.service"

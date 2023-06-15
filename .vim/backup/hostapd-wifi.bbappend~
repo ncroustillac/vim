@@ -1,0 +1,26 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+
+#SYSTEMD_AUTO_ENABLE_${PN} = "disable"
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+
+SRC_URI += "file://hostapd-wifi-default.conf"
+SRC_URI += "file://dhcprelay-wifi.service"
+SRC_URI += "file://defconfig-wifi"
+SRC_URI += "file://hostapd-wifi.service"
+SRC_URI += "file://hostapd-wifi.sh"
+SRC_URI += "file://hostapd-wifi-hook"
+
+RDEPENDS_${PN}_remove += "dhcprelay"
+
+do_install_append() {
+  install -d ${D}/var/hostapd-wifi
+  install -m 0644 ${WORKDIR}/hostapd-wifi-default.conf ${D}${sysconfdir}
+  
+  install -d ${D}/usr/services/hostapd-wifi
+  install -m 0755 ${WORKDIR}/hostapd-wifi.sh ${D}/usr/services/hostapd-wifi
+  install -m 0755 ${WORKDIR}/hostapd-wifi-hooks ${D}/usr/services/hostapd-wifi
+}
+
+FILES_${PN} += "/usr/services/hostapd-wifi"
+

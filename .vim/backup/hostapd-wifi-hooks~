@@ -1,0 +1,35 @@
+#!/bin/sh
+#--------------------------------------------------------------------------------
+# Script that 
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# TODO:
+#   * add flock
+#
+# Note:
+# $1: interface
+# $2: event
+# $3: mac addr
+
+# check that event comes from the right interface
+if [ "$1" != "wlan0" ]; then
+    echo "Unexpected interface: received event from $1"
+    exit 1
+fi
+
+# Authentication success
+if [ "$2" == "AP-STA-CONNECTED" ]; then
+    # notify the firewall
+    echo '1' > /var/services/acct-authorized/acct-authorized-wifi
+    # log a message
+    logger -t $0 "WIFIPMATS $3 on $1"
+# authentication failure
+elif [ "$2" == "CTRL-EVENT-EAP-FAILURE2" ]; then
+    # only need to report failure in logs
+    logger -t $0 "WIFIPMATF $3 on $1"
+# authentication timeout and/or disconnect
+elif [ "$2" == "AP-STA-DISCONNECTED" ]; then
+    # need only to notify the firewall
+    echo '0' > /var/services/acct-authorized/acct-authorized-wifi
+fi

@@ -1,0 +1,29 @@
+SUMMARY = "Set persistent network device name"
+DESCRIPTION = "Set persistent network device name"
+LICENSE = "CLOSED"
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+
+SRC_URI += "file://70-persistent-net.rules"
+SRC_URI += "file://71-wlan-namespace.rules"
+
+inherit tools/safran-tools-sedinfiles
+SAFRAN_TOOLS_SEDINFILES_FILES += "${D}/etc/udev/rules.d/70-persistent-net.rules"
+
+do_install_append() {
+  install -d ${D}/etc/udev/rules.d
+
+  # udev network interface renaming
+  install -m 0644 ${WORKDIR}/70-persistent-net.rules ${D}/etc/udev/rules.d/
+
+  # udev network interface set namespace
+  install -m 0644 ${WORKDIR}/71-wlan-namespace.rules ${D}/etc/udev/rules.d/
+
+  # Disable 80-net-setup-link.rules
+  touch ${D}/etc/udev/rules.d/80-net-setup-link.rules
+}
+
+FILES_${PN} += "/etc/udev/rules.d/70-persistent-net.rules"
+FILES_${PN} += "/etc/udev/rules.d/71-wlan-namespace.rules"
+FILES_${PN} += "/etc/udev/rules.d/80-net-setup-link.rules"
+

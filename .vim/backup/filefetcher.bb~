@@ -1,0 +1,46 @@
+DESCRIPTION = "Handle requests for RMC and send the result to signature checker"
+LICENSE = "CLOSED"
+
+# No need compiler
+INHIBIT_DEFAULT_DEPS = "1"
+S = "${WORKDIR}"
+
+SRC_URI += "file://filefetcher.service"
+SRC_URI += "file://filefetcher.sh"
+SRC_URI += "file://filefetcher.path"
+SRC_URI += "file://filefetcher-rmc.service"
+SRC_URI += "file://filefetcher-rmc.sh"
+SRC_URI += "file://filefetcher-rmc.path"
+
+
+inherit systemd
+#inherit useradd
+
+#USERADD_PACKAGES = "${PN}"
+#GROUPADD_PARAM_${PN} = "dlsecure;dling;parttable"
+#USERADD_PARAM_${PN} = "-M -s /bin/false -G dlsecure,dling,parttable -U ${BPN}"
+
+SYSTEMD_SERVICE_${PN} = "filefetcher.service filefetcher-rmc.service"
+SYSTEMD_AUTO_ENABLE_${PN} = "enable"
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+
+do_install () {
+  install -d ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/filefetcher.service      ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/filefetcher-rmc.service  ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/filefetcher.path         ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/filefetcher-rmc.path     ${D}${systemd_unitdir}/system
+
+  install -d ${D}/usr/services/filefetcher
+  install -m 0500 ${WORKDIR}/filefetcher.sh       ${D}/usr/services/filefetcher
+  install -m 0500 ${WORKDIR}/filefetcher-rmc.sh   ${D}/usr/services/filefetcher
+  #install -d ${D}/var/services/filefetcher
+
+  install -d ${D}/var/services
+  ln -s /containers/container-as/var/services/filefetcher  ${D}/var/services/filefetcher
+}
+
+
+FILES_${PN} += "${systemd_unitdir}/system"
+FILES_${PN} += "/usr/services/filefetcher"
+FILES_${PN} += "/var/services/filefetcher"

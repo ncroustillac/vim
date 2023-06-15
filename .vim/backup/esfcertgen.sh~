@@ -1,0 +1,11 @@
+
+
+#Generation du root cert
+./esf generate --root-cert --output-dir Y:/esf/root > Y:/esf/esf_gen.log
+
+#Generation des sub cert
+./esf generate --sub-cert --issuer-dir Y:/esf/root --output-dir Y:/esf/subcert1 # >> Y:/esf/esf_gen.log
+./esf generate --sub-cert --issuer-dir Y:/esf/root --output-dir Y:/esf/subcert2 # >> Y:/esf/esf_gen.log
+
+#Generation du user cert
+./esf generate --user-cert --issuer-dir Y:/esf/subcert2 --output-dir Y:/esf/user # >> Y:/esf/esf_gen.log

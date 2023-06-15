@@ -1,0 +1,129 @@
+/*
+ =======================================================================
+ Name        : HMOS_sendSBD.c
+ Company     : Safran Electronics & Defense
+ Version     :
+ Copyright   : Safran Electronics & Defense
+ Description : This source file defines the API service HMOS_sendSBD
+ =======================================================================
+ */
+
+/**************************************
+ * IMPORTED COMPONENTS
+ **************************************/
+#include <hmos_cyclops_misc.h>
+#include <hmos.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+
+/**************************************
+ * LOCAL CONST
+ **************************************/
+#define PREFIX_PATH_FOR_CYCLOPS           "/containers/container-as"
+#define MAX_PATH_SIZE                     100
+
+#define INPUT_FILE_SAT_TRANSFER_NAME            "transfersat"
+#define PATH_TO_SAT_FILE_TRANSFER               "/var/sat/fetch/transfers"
+#define FULL_PATH_SAT_TO_DATA_FILE    \
+            PATH_TO_SAT_FILE_TRANSFER "/" INPUT_FILE_SAT_TRANSFER_NAME
+
+#define FILE_NAME_SAT_TRIGGER               ".trigger_send"
+#define PATH_TO_SAT_TRIGGER_FILE            "/var/services/sat/input"
+#define FULL_PATH_SAT_TO_TRIGGER_FILE       \
+            PATH_TO_SAT_TRIGGER_FILE "/" FILE_NAME_SAT_TRIGGER
+
+/**************************************
+ * GLOBAL VARIABLES
+ **************************************/
+/* None */
+
+/**************************************
+ * LOCAL VARIABLES
+ **************************************/
+/* None */
+
+/**************************************
+ * LOCAL PROTOTYPES
+ **************************************/
+/* None */
+
+/* */
+
+/**************************************
+ * EXTERNAL FUNCTIONS
+ **************************************/
+e_hmos_retcode HMOS_sendSBD (char * data)
+{
+    int ret;
+    FILE *fp;
+    char *trigger_file_full_path=FULL_PATH_SAT_TO_TRIGGER_FILE;
+    mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP; //0660
+
+    // sanity check
+    if ( ! data )
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR, "%s: invalid parameter", __func__);
+        return HMOS_RETCODE_ERROR;
+    }
+
+    if (access(FULL_PATH_SAT_TO_TRIGGER_FILE, F_OK) == 0)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR,
+                      "%s: error: previous file transfer is still running",
+                      __func__);
+        return HMOS_RETCODE_ERROR;
+    }
+
+    /* Create file */
+    fp = fopen(FULL_PATH_SAT_TO_DATA_FILE, "w");
+    if (fp == NULL)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR,
+                      "%s: error while opening file (full path=%s, errno=%d)",
+                      __func__, FULL_PATH_SAT_TO_DATA_FILE, errno);
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "Errno = %d : %s",
+                      errno, strerror(errno));
+        return HMOS_RETCODE_ERROR;
+    }
+
+    /* Fill the file with data */
+    fprintf(fp, "%s", data);
+
+    if (fclose(fp) != 0)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR,
+                      "%s: error while closing file (full path=%s, errno=%d)",
+                      __func__, FULL_PATH_SAT_TO_DATA_FILE, errno);
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE,
+                      "Errno = %d : %s", errno, strerror(errno));
+        return HMOS_RETCODE_ERROR;
+    }
+
+    HMOS_logPrint(HMOS_LOG_CRIT_NOTICE, "%s: transfer source file=%s len=%d",
+                  __func__, FULL_PATH_SAT_TO_DATA_FILE, strlen(data));
+
+    /* Tell SAT to start the transfer */
+    /* Create file from path */
+    if (creat(trigger_file_full_path, mode) == -1)
+    {
+        HMOS_logPrint(HMOS_LOG_CRIT_ERROR,
+                      "%s: error while creating file (full path=%s, errno=%d)",
+                      __func__, trigger_file_full_path, errno);
+        HMOS_logPrint(HMOS_LOG_CRIT_NOTICE,
+                      "Errno = %d : %s", errno, strerror(errno));
+        return HMOS_RETCODE_ERROR;
+    }
+
+    HMOS_logPrint(HMOS_LOG_CRIT_NOTICE,
+                  "%s: file created \"%s\", file transfer initiated",
+                  __func__, INPUT_FILE_SAT_TRANSFER_NAME);
+
+    return HMOS_RETCODE_SUCCESS;
+}
+
+
+/**************************************
+ * LOCAL FUNCTIONS
+ **************************************/
+/* None */
