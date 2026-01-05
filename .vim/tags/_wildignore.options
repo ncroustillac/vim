@@ -1,0 +1,6 @@
+*.o
+*.obj
+*.elf
+*.bin
+*.pyc
+__pycache__
