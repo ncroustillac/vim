@@ -1,8 +1,22 @@
+" set nocompatible              " Désactiver le mode Vi pour plus de compatibilité
+filetype off                  " Désactiver la détection automatique des fichiers
+
+" Ajouter Vundle au runtime path
+set rtp+=~/.vim/bundle/Vundle.vim
+
+call vundle#begin()
+Plugin 'valloric/YouCompleteMe'
+Plugin 'godlygeek/tabular'
+Plugin 'preservim/vim-markdown'
+call vundle#end()
+
+filetype plugin indent on  " Réactiver la gestion des fichiers
+
 " add color syntax
 syntax on
 
 " special characters
-"set list
+set list
 
 " space rather than tabulation
 set expandtab
@@ -39,17 +53,15 @@ else
 endif
 
 " autostart for plugin explorer
-autocmd VimEnter * NERDTree %
+autocmd VimEnter * NERDTree .
 autocmd VimEnter * wincmd l
-nnoremap <C-J> <C-W><Left>
-nnoremap <C-K> <C-W><Right>
 
 " autostart symbol explorer
 let Tlist_Use_Right_Window   = 1
 let Tlist_Auto_Highlight_Tag   = 1
 let Tlist_Show_One_File   = 1
 let Tlist_Auto_Open   = 1
-"autocmd VimEnter * TlistOpen
+autocmd VimEnter * TlistToggle 
 
 " define the folding methods
 function FoldBrace()
@@ -104,4 +116,7 @@ function! LoadCscope()
 endfunction
 au BufEnter /* call LoadCscope()
 
+nnoremap <C-A> <C-W><Left>
+nnoremap <C-Z> <C-W><Right>
+nnoremap <C-B> :bp<C-R>
 noremap <C-RightMouse> :cs find c <C-R>=expand("<cword>")<CR><CR>
